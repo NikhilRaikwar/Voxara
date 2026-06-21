@@ -1,6 +1,7 @@
 import { logger } from "./logger";
 
 const URL = "https://api.elevenlabs.io/v1/speech-to-text";
+const ISOLATION_URL = "https://api.elevenlabs.io/v1/audio-isolation";
 
 export class ElevenLabsError extends Error {
   constructor(
@@ -76,5 +77,63 @@ export async function transcribe(
   return {
     transcript: String(body.text ?? ""),
     words,
+  };
+}
+
+export interface IsolatedAudio {
+  audio: Buffer;
+  contentType: string;
+}
+
+// Extract the vocal stem from a mixed track. ElevenLabs Audio Isolation is
+// synchronous: it returns the processed audio bytes in a single call (no job
+// polling), so the caller can stream the result straight back to the browser.
+export async function isolateVocals(
+  buffer: Buffer,
+  filename: string,
+  contentType: string,
+): Promise<IsolatedAudio> {
+  const form = new FormData();
+  const blob = new Blob([new Uint8Array(buffer)], {
+    type: contentType || "audio/mpeg",
+  });
+  form.append("audio", blob, filename || "track.mp3");
+
+  const res = await fetch(ISOLATION_URL, {
+    method: "POST",
+    headers: { "xi-api-key": apiKey() },
+    body: form,
+  });
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    logger.warn(
+      { status: res.status, detail },
+      "ElevenLabs audio isolation failed",
+    );
+    // Account/quota/auth problems are not our fault — surface them (4xx) so the
+    // message reaches the user instead of being masked by the generic handler.
+    if ([401, 402, 403, 429].includes(res.status)) {
+      throw new ElevenLabsError(
+        "Vocal isolation is unavailable: the ElevenLabs account rejected the request (check the API key, plan or quota).",
+        402,
+      );
+    }
+    if (res.status === 400 && detail.includes("audio_too_short")) {
+      throw new ElevenLabsError(
+        "That audio clip is too short to isolate — please upload the full song (at least ~5 seconds).",
+        400,
+      );
+    }
+    throw new ElevenLabsError(
+      `ElevenLabs audio isolation HTTP ${res.status}`,
+      502,
+    );
+  }
+
+  const arrayBuffer = await res.arrayBuffer();
+  return {
+    audio: Buffer.from(arrayBuffer),
+    contentType: res.headers.get("content-type") || "audio/mpeg",
   };
 }

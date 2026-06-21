@@ -101,32 +101,6 @@ export interface TrackSession {
   targetLanguage: string;
 }
 
-export type IsolationJobStatus = typeof IsolationJobStatus[keyof typeof IsolationJobStatus];
-
-
-export const IsolationJobStatus = {
-  processing: 'processing',
-  success: 'success',
-  error: 'error',
-} as const;
-
-export interface IsolationJob {
-  taskId: string;
-  status: IsolationJobStatus;
-  /**
-     * Progress percentage 0-100 when available.
-     * @nullable
-     */
-  progress?: number | null;
-  /**
-     * URL of the isolated vocal stem when status is success.
-     * @nullable
-     */
-  vocalUrl?: string | null;
-  /** @nullable */
-  error?: string | null;
-}
-
 export type GradedWordStatus = typeof GradedWordStatus[keyof typeof GradedWordStatus];
 
 
@@ -205,12 +179,5 @@ trackId: number;
  * Target language code for translation (e.g. "en").
  */
 selected_language?: string;
-};
-
-export type GetIsolationStatusParams = {
-/**
- * The isolation task id returned from the isolation upload endpoint.
- */
-taskId: string;
 };
 

@@ -28,7 +28,7 @@ export default function ListenMode() {
     }
   );
 
-  const { startIsolation, status: isolationStatus, progress, vocalUrl: isolatedUrl, error: isolationError } = useAudioIsolation();
+  const { startIsolation, status: isolationStatus, vocalUrl: isolatedUrl, error: isolationError } = useAudioIsolation();
 
   useEffect(() => {
     if (isolatedUrl && !vocalUrl) {
@@ -100,17 +100,10 @@ export default function ListenMode() {
           ) : (
             <div className="flex flex-col items-center justify-center py-8">
               <Loader2 className="w-12 h-12 text-primary animate-spin mb-6" />
-              <h3 className="text-xl font-semibold mb-2">
-                {isolationStatus === 'uploading' ? 'Uploading Audio...' : 'Isolating Vocals...'}
-              </h3>
-              {isolationStatus === 'processing' && (
-                <div className="w-full max-w-xs mt-4">
-                  <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-primary transition-all duration-500" style={{ width: `${progress}%` }} />
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">{progress}%</p>
-                </div>
-              )}
+              <h3 className="text-xl font-semibold mb-2">Isolating Vocals...</h3>
+              <p className="text-sm text-muted-foreground mt-2 max-w-xs">
+                This can take up to a minute for a full song. Hang tight.
+              </p>
             </div>
           )}
         </div>

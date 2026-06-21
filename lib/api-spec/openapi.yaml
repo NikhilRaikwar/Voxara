@@ -12,8 +12,6 @@ tags:
     description: Health operations
   - name: tracks
     description: Track search and lyric/translation/timing resolution
-  - name: isolation
-    description: Vocal isolation jobs
 paths:
   /healthz:
     get:
@@ -178,32 +176,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
-  /isolation/status:
-    get:
-      operationId: getIsolationStatus
-      tags: [isolation]
-      summary: Poll a vocal isolation job
-      description: Check the status of a LALAL.AI split job and retrieve the isolated vocal URL when ready.
-      parameters:
-        - name: taskId
-          in: query
-          required: true
-          schema:
-            type: string
-          description: The isolation task id returned from the isolation upload endpoint.
-      responses:
-        "200":
-          description: Isolation job status
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/IsolationJob"
-        "404":
-          description: Unknown task
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiError"
 components:
   schemas:
     HealthStatus:
@@ -335,23 +307,6 @@ components:
           type: boolean
         targetLanguage:
           type: string
-    IsolationJob:
-      type: object
-      required: [taskId, status]
-      properties:
-        taskId:
-          type: string
-        status:
-          type: string
-          enum: [processing, success, error]
-        progress:
-          type: ["number", "null"]
-          description: Progress percentage 0-100 when available.
-        vocalUrl:
-          type: ["string", "null"]
-          description: URL of the isolated vocal stem when status is success.
-        error:
-          type: ["string", "null"]
     GradedWord:
       type: object
       required: [expected, status]

@@ -12,7 +12,9 @@ async function errorMessage(res: Response, fallback: string): Promise<string> {
   return fallback;
 }
 
-export async function uploadIsolation(file: File): Promise<{ taskId: string; status: string }> {
+// Isolation is synchronous: the server returns the isolated vocal audio bytes
+// directly. We wrap them in an object URL the <audio> element can play.
+export async function uploadIsolation(file: File): Promise<{ vocalUrl: string }> {
   const formData = new FormData();
   formData.append('file', file);
   const res = await fetch(`${import.meta.env.BASE_URL}api/isolation`, {
@@ -20,7 +22,8 @@ export async function uploadIsolation(file: File): Promise<{ taskId: string; sta
     body: formData,
   });
   if (!res.ok) throw new Error(await errorMessage(res, 'Upload failed'));
-  return res.json();
+  const blob = await res.blob();
+  return { vocalUrl: URL.createObjectURL(blob) };
 }
 
 export async function gradeRecording(file: Blob, expected: string, languageCode?: string): Promise<GradingResult> {

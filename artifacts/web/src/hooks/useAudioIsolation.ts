@@ -1,80 +1,56 @@
-import { useState, useCallback, useEffect } from 'react';
-import { useGetIsolationStatus, getGetIsolationStatusQueryKey } from '@workspace/api-client-react';
+import { useState, useCallback } from 'react';
 import { uploadIsolation } from '../lib/api-extra';
 
+// Isolation runs synchronously on the server (ElevenLabs Audio Isolation): one
+// request returns the isolated vocal audio, so there is no job to poll. We model
+// just three states — uploading (request in flight), done (vocalUrl ready), or
+// error — while keeping the same shape the UI already consumes.
 export function useAudioIsolation() {
-  const [taskId, setTaskId] = useState<string | null>(null);
+  const [vocalUrl, setVocalUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const { data: statusData, isError, error: pollError } = useGetIsolationStatus(
-    { taskId: taskId! },
-    { 
-      query: { 
-        enabled: !!taskId, 
-        queryKey: getGetIsolationStatusQueryKey({ taskId: taskId! }),
-        refetchInterval: (query) => {
-          if (!query.state.data) return 2500;
-          const status = query.state.data.status;
-          return (status === 'processing' || status === undefined) ? 2500 : false;
-        }
-      } 
-    }
-  );
 
   const startIsolation = useCallback(async (file: File) => {
     try {
       setUploading(true);
       setError(null);
-      setTaskId(null);
+      // Free any previously isolated blob before requesting a new one.
+      setVocalUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
       const res = await uploadIsolation(file);
-      setTaskId(res.taskId);
+      setVocalUrl(res.vocalUrl);
     } catch (e: any) {
-      setError(e.message || 'Upload failed');
+      setError(e.message || 'Isolation failed');
     } finally {
       setUploading(false);
     }
   }, []);
 
   const reset = useCallback(() => {
-    setTaskId(null);
+    setVocalUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
     setUploading(false);
     setError(null);
   }, []);
 
-  let currentStatus = 'idle';
-  let progress = 0;
-  let vocalUrl: string | null = null;
-
-  if (uploading) {
-    currentStatus = 'uploading';
-  } else if (taskId && statusData) {
-    currentStatus = statusData.status;
-    progress = statusData.progress || 0;
-    vocalUrl = statusData.vocalUrl || null;
-    if (statusData.error) {
-      currentStatus = 'error';
-    }
-  } else if (taskId && !statusData) {
-    currentStatus = 'processing'; // initial poll
-  }
-
-  const pollErrorMessage =
-    pollError instanceof Error
-      ? pollError.message
-      : pollError
-        ? String(pollError)
-        : null;
-  const activeError =
-    error || statusData?.error || (isError ? pollErrorMessage : null);
+  const status = uploading
+    ? 'processing'
+    : error
+      ? 'error'
+      : vocalUrl
+        ? 'success'
+        : 'idle';
 
   return {
     startIsolation,
     reset,
-    status: currentStatus,
-    progress,
+    status,
+    progress: 0,
     vocalUrl,
-    error: activeError,
-    taskId,
+    error,
   };
 }

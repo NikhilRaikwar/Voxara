@@ -1,7 +1,6 @@
 import { Router, type IRouter } from "express";
 import multer from "multer";
-import { GetIsolationStatusResponse } from "@workspace/api-zod";
-import { uploadFile, startSplit, checkStatus } from "../lib/lalal";
+import { isolateVocals } from "../lib/elevenlabs";
 
 const router: IRouter = Router();
 
@@ -10,43 +9,23 @@ const upload = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 });
 
+// Vocal isolation is synchronous: ElevenLabs returns the isolated audio bytes
+// in one call, so we run it inline and stream the resulting vocal stem back to
+// the browser (which plays it from an in-memory blob URL). No job/polling.
 router.post("/isolation", upload.single("file"), async (req, res, next) => {
   try {
     if (!req.file) {
       res.status(400).json({ error: "An audio file is required" });
       return;
     }
-    const fileId = await uploadFile(
+    const { audio, contentType } = await isolateVocals(
       req.file.buffer,
-      req.file.originalname || "audio",
+      req.file.originalname || "track.mp3",
       req.file.mimetype,
     );
-    await startSplit(fileId);
-    res.json({ taskId: fileId, status: "processing" });
-    return;
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.get("/isolation/status", async (req, res, next) => {
-  try {
-    const taskId =
-      typeof req.query.taskId === "string" ? req.query.taskId : undefined;
-    if (!taskId) {
-      res.status(400).json({ error: "A taskId is required" });
-      return;
-    }
-    const check = await checkStatus(taskId);
-    res.json(
-      GetIsolationStatusResponse.parse({
-        taskId,
-        status: check.status,
-        progress: check.progress,
-        vocalUrl: check.vocalUrl,
-        error: check.error,
-      }),
-    );
+    res.setHeader("Content-Type", contentType);
+    res.setHeader("Content-Length", audio.length);
+    res.send(audio);
     return;
   } catch (err) {
     next(err);

@@ -18,12 +18,10 @@ import type {
 import type {
   ApiError,
   GetFeaturedTracksParams,
-  GetIsolationStatusParams,
   GetTrackSessionParams,
   GetTrackStatsParams,
   GetTrendingTracksParams,
   HealthStatus,
-  IsolationJob,
   SearchTracksParams,
   Track,
   TrackSession,
@@ -535,91 +533,6 @@ export function useGetTrackSession<TData = Awaited<ReturnType<typeof getTrackSes
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetTrackSessionQueryOptions(params,options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return { ...query, queryKey: queryOptions.queryKey };
-}
-
-
-
-
-
-
-
-export const getGetIsolationStatusUrl = (params: GetIsolationStatusParams,) => {
-  const normalizedParams = new URLSearchParams();
-
-  Object.entries(params || {}).forEach(([key, value]) => {
-
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : value.toString())
-    }
-  });
-
-  const stringifiedParams = normalizedParams.toString();
-
-  return stringifiedParams.length > 0 ? `/api/isolation/status?${stringifiedParams}` : `/api/isolation/status`
-}
-
-/**
- * Check the status of a LALAL.AI split job and retrieve the isolated vocal URL when ready.
- * @summary Poll a vocal isolation job
- */
-export const getIsolationStatus = async (params: GetIsolationStatusParams, options?: RequestInit): Promise<IsolationJob> => {
-
-  return customFetch<IsolationJob>(getGetIsolationStatusUrl(params),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetIsolationStatusQueryKey = (params?: GetIsolationStatusParams,) => {
-    return [
-    `/api/isolation/status`, ...(params ? [params] : [])
-    ] as const;
-    }
-
-
-export const getGetIsolationStatusQueryOptions = <TData = Awaited<ReturnType<typeof getIsolationStatus>>, TError = ErrorType<ApiError>>(params: GetIsolationStatusParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getIsolationStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetIsolationStatusQueryKey(params);
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getIsolationStatus>>> = ({ signal }) => getIsolationStatus(params, { signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getIsolationStatus>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetIsolationStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getIsolationStatus>>>
-export type GetIsolationStatusQueryError = ErrorType<ApiError>
-
-
-/**
- * @summary Poll a vocal isolation job
- */
-
-export function useGetIsolationStatus<TData = Awaited<ReturnType<typeof getIsolationStatus>>, TError = ErrorType<ApiError>>(
- params: GetIsolationStatusParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getIsolationStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetIsolationStatusQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

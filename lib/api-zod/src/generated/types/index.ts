@@ -8,7 +8,6 @@
 
 export * from './apiError';
 export * from './getFeaturedTracksParams';
-export * from './getIsolationStatusParams';
 export * from './getTrackSessionParams';
 export * from './getTrackStatsParams';
 export * from './getTrendingTracksParams';
@@ -16,8 +15,6 @@ export * from './gradedWord';
 export * from './gradedWordStatus';
 export * from './gradingResult';
 export * from './healthStatus';
-export * from './isolationJob';
-export * from './isolationJobStatus';
 export * from './lyricLine';
 export * from './lyricWord';
 export * from './searchTracksParams';

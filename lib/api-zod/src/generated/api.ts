@@ -154,20 +154,3 @@ export const GetTrackSessionResponse = zod.object({
 })
 
 
-/**
- * Check the status of a LALAL.AI split job and retrieve the isolated vocal URL when ready.
- * @summary Poll a vocal isolation job
- */
-export const GetIsolationStatusQueryParams = zod.object({
-  "taskId": zod.coerce.string().describe('The isolation task id returned from the isolation upload endpoint.')
-})
-
-export const GetIsolationStatusResponse = zod.object({
-  "taskId": zod.string(),
-  "status": zod.enum(['processing', 'success', 'error']),
-  "progress": zod.number().nullish().describe('Progress percentage 0-100 when available.'),
-  "vocalUrl": zod.string().nullish().describe('URL of the isolated vocal stem when status is success.'),
-  "error": zod.string().nullish()
-})
-
-
