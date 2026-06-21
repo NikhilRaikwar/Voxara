@@ -11,6 +11,7 @@ import {
 import { useSession } from "../store/SessionContext";
 import { useI18n } from "../i18n/I18nContext";
 import { TrackCard } from "../components/TrackCard";
+import { demoTrack } from "../data/demoTrack";
 
 const MOODS = [
   "heartbreak",
@@ -26,7 +27,7 @@ export default function Landing() {
   const [query, setQuery] = useState("");
   const [activeMood, setActiveMood] = useState<Mood | null>(null);
   const [, setLocation] = useLocation();
-  const { targetLanguage, setCurrentTrack } = useSession();
+  const { targetLanguage, setCurrentTrack, clearSession } = useSession();
   const { t } = useI18n();
 
   const { data: featuredTracks, isLoading } = useGetFeaturedTracks({
@@ -107,21 +108,20 @@ export default function Landing() {
         </div>
       </form>
 
-      {featuredTracks && featuredTracks.length > 0 && (
-        <div className="-mt-10 mb-16 text-center animate-in fade-in duration-700 delay-200 fill-mode-both">
-          <button
-            type="button"
-            onClick={() => {
-              setCurrentTrack(featuredTracks[0]);
-              setLocation("/listen");
-            }}
-            className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline active:scale-95 transition-transform"
-          >
-            <Sparkles className="w-4 h-4" />
-            {t("landing.tryDemo")}
-          </button>
-        </div>
-      )}
+      <div className="-mt-10 mb-16 text-center animate-in fade-in duration-700 delay-200 fill-mode-both">
+        <button
+          type="button"
+          onClick={() => {
+            clearSession();
+            setCurrentTrack(demoTrack);
+            setLocation("/listen");
+          }}
+          className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline active:scale-95 transition-transform"
+        >
+          <Sparkles className="w-4 h-4" />
+          {t("landing.tryDemo")}
+        </button>
+      </div>
 
       <div className="w-full mb-16 animate-in slide-in-from-bottom-10 duration-700 delay-200 fade-in fill-mode-both">
         <div className="flex items-center gap-2 mb-2">

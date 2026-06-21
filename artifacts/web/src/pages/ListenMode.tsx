@@ -18,6 +18,7 @@ import { useI18n } from "../i18n/I18nContext";
 import { useAudioIsolation } from "../hooks/useAudioIsolation";
 import { Button } from "../components/ui/button";
 import { FirstRunExplainer } from "../components/FirstRunExplainer";
+import { demoSession, demoAudioUrl, isDemoTrack } from "../data/demoTrack";
 
 export default function ListenMode() {
   const [location, setLocation] = useLocation();
@@ -29,15 +30,13 @@ export default function ListenMode() {
     return null;
   }
 
-  const {
-    data: sessionData,
-    isLoading: isLoadingSession,
-    isError: isSessionError,
-  } = useGetTrackSession(
+  const isDemo = isDemoTrack(currentTrack);
+
+  const sessionQuery = useGetTrackSession(
     { trackId: currentTrack.trackId, selected_language: targetLanguage },
     {
       query: {
-        enabled: !!currentTrack.trackId,
+        enabled: !!currentTrack.trackId && !isDemo,
         queryKey: getGetTrackSessionQueryKey({
           trackId: currentTrack.trackId,
           selected_language: targetLanguage,
@@ -45,6 +44,12 @@ export default function ListenMode() {
       },
     },
   );
+
+  // The demo track ships its lyrics, timings and translations bundled, so it
+  // renders instantly with no API round-trip and no upload.
+  const sessionData = isDemo ? demoSession : sessionQuery.data;
+  const isLoadingSession = isDemo ? false : sessionQuery.isLoading;
+  const isSessionError = isDemo ? false : sessionQuery.isError;
 
   const {
     startIsolation,
@@ -58,6 +63,17 @@ export default function ListenMode() {
       setVocalUrl(isolatedUrl);
     }
   }, [isolatedUrl, vocalUrl, setVocalUrl]);
+
+  // Point playback at the bundled demo clip when the demo track is active, and
+  // clear it again when leaving the demo so a real track never plays demo audio.
+  useEffect(() => {
+    const demoUrl = demoAudioUrl();
+    if (isDemo) {
+      if (vocalUrl !== demoUrl) setVocalUrl(demoUrl);
+    } else if (vocalUrl === demoUrl) {
+      setVocalUrl(null);
+    }
+  }, [isDemo, vocalUrl, setVocalUrl]);
 
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -163,7 +179,7 @@ export default function ListenMode() {
 
       {/* Optional upload card — Listen mode works without it; uploading only
           adds isolated-vocal playback. Dismissible so it never blocks lyrics. */}
-      {noAudio && showUploadCard && (
+      {noAudio && showUploadCard && !isDemo && (
         <div className="relative w-full bg-card border border-border/50 rounded-2xl p-6 mb-8 shadow-sm">
           {!isIsolating && (
             <button

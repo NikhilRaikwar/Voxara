@@ -17,6 +17,7 @@ import { useI18n } from "../i18n/I18nContext";
 import { useMicRecording } from "../hooks/useMicRecording";
 import { gradeRecording, lineAudioUrl } from "../lib/api-extra";
 import { Button } from "../components/ui/button";
+import { demoSession, demoAudioUrl, isDemoTrack } from "../data/demoTrack";
 
 export default function PracticeMode() {
   const [location, setLocation] = useLocation();
@@ -32,12 +33,13 @@ export default function PracticeMode() {
   }
 
   const lineIndex = parseInt(lineIdxParam, 10);
+  const isDemo = isDemoTrack(currentTrack);
 
-  const { data: sessionData } = useGetTrackSession(
+  const sessionQuery = useGetTrackSession(
     { trackId: currentTrack.trackId, selected_language: targetLanguage },
     {
       query: {
-        enabled: !!currentTrack.trackId,
+        enabled: !!currentTrack.trackId && !isDemo,
         queryKey: getGetTrackSessionQueryKey({
           trackId: currentTrack.trackId,
           selected_language: targetLanguage,
@@ -46,6 +48,7 @@ export default function PracticeMode() {
     },
   );
 
+  const sessionData = isDemo ? demoSession : sessionQuery.data;
   const line = sessionData?.lines[lineIndex];
 
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -66,20 +69,29 @@ export default function PracticeMode() {
   // The reference pronunciation is synthesized on the server (ElevenLabs TTS)
   // from the track's own lyrics — no uploaded audio required. The browser caches
   // the GET response, so replays and per-word "Hear" reuse the same audio.
-  const modelAudioUrl = lineAudioUrl(
-    currentTrack.trackId,
-    lineIndex,
-    targetLanguage,
-  );
+  // The demo track instead plays the matching segment of its bundled clip.
+  const modelAudioUrl = isDemo
+    ? demoAudioUrl()
+    : lineAudioUrl(currentTrack.trackId, lineIndex, targetLanguage);
 
   const playModelLine = () => {
     const el = audioRef.current;
     if (!el) return;
     setModelError(false);
-    el.currentTime = 0;
+    el.currentTime = isDemo && line ? line.ts : 0;
     el.play()
       .then(() => setIsModelPlaying(true))
       .catch(() => setModelError(true));
+  };
+
+  // For the demo's shared clip, stop playback at the end of the current line.
+  const handleModelTimeUpdate = () => {
+    if (!isDemo || !line) return;
+    const el = audioRef.current;
+    if (el && el.currentTime >= line.te) {
+      el.pause();
+      setIsModelPlaying(false);
+    }
   };
 
   // Auto-play the model line whenever the active line changes.
@@ -149,6 +161,7 @@ export default function PracticeMode() {
       <audio
         ref={audioRef}
         src={modelAudioUrl}
+        onTimeUpdate={handleModelTimeUpdate}
         onEnded={() => setIsModelPlaying(false)}
         onError={() => {
           setIsModelPlaying(false);
