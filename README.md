@@ -27,6 +27,8 @@ it is not a decorative integration.
   with Musixmatch chart data plus Songstats momentum.
 - **Start without an upload:** read lyrics, translations, and practice timed
   lines immediately using ElevenLabs model pronunciation.
+- **Try the complete demo instantly:** open a bundled, rights-clear “Frère
+  Jacques” lesson with synchronized audio and no file upload.
 - **Hear isolated vocals:** optionally upload authorized audio for synced vocal
   playback and word highlighting.
 - **Understand the meaning:** read translated lines in a choice of 33 languages.
@@ -35,6 +37,20 @@ it is not a decorative integration.
 - **Review progress:** track practiced lines and average recognition accuracy.
 
 Voxara supports right-to-left layouts for Arabic, Hebrew, Persian, and Urdu.
+
+## Zero-upload judge demo
+
+The **Try a demo song** action opens a self-contained French–English lesson for
+the public-domain song “Frère Jacques.” Voxara bundles:
+
+- a self-synthesized MP3 generated through ElevenLabs;
+- four lyric lines with character-alignment-derived word timings;
+- English translations and an ephemeral `TrackSession`;
+- Listen and Practice flows that never request an audio upload.
+
+The sentinel demo track stays entirely client-side and does not persist or
+redistribute Musixmatch content. Recording and grading a learner attempt still
+uses the normal live ElevenLabs speech-to-text route.
 
 ## How it works
 
@@ -184,10 +200,20 @@ pnpm run build
 
 ```text
 artifacts/web/          React application
+  public/demo/           Rights-clear bundled demo audio
+  scripts/               Reproducible demo-audio generator
+  src/data/              Typed bundled demo session
 artifacts/api-server/   Express API and provider integrations
 lib/api-spec/           OpenAPI source contract
 lib/api-zod/            Generated runtime schemas
 lib/api-client-react/   Generated React API client
+```
+
+To regenerate the bundled demo audio and exact word timings (this consumes
+ElevenLabs credits and overwrites both generated files):
+
+```bash
+ELEVENLABS_API_KEY=... node artifacts/web/scripts/generate-demo-audio.mjs
 ```
 
 ## Privacy and content handling

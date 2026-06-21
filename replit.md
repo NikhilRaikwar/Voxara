@@ -1,6 +1,6 @@
 # Voxara
 
-A music-driven language & pronunciation tutor. Search a song, upload its audio, isolate the vocals, then learn the lyrics in **Listen mode** (word-synced highlighting + tap-to-translate) and rehearse them in **Practice mode** (record yourself, get word-by-word pronunciation grading), ending in a session recap.
+A music-driven language and pronunciation tutor. Search by song or remembered lyric, discover music by mood or breakout momentum, then learn in **Listen mode** and rehearse in **Practice mode** with model pronunciation and word-by-word grading. Uploading audio is optional; a bundled, rights-clear demo runs end to end without an upload.
 
 ## Run & Operate
 
@@ -8,7 +8,7 @@ A music-driven language & pronunciation tutor. Search a song, upload its audio, 
 - `pnpm --filter @workspace/web run dev` — run the web frontend
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- Required secrets: `MUSIXMATCH_API_KEY`, `ELEVENLABS_API_KEY`, `SONGSTATS_API_KEY` (`ELEVENLABS_API_KEY` powers both vocal isolation and pronunciation grading)
+- Required secrets: `MUSIXMATCH_API_KEY`, `ELEVENLABS_API_KEY`, `SONGSTATS_API_KEY` (`ELEVENLABS_API_KEY` powers TTS model pronunciation, optional vocal isolation, and pronunciation grading)
 - Translation uses the Replit-managed OpenAI integration: `AI_INTEGRATIONS_OPENAI_BASE_URL`, `AI_INTEGRATIONS_OPENAI_API_KEY`
 
 ## Stack
@@ -27,6 +27,7 @@ A music-driven language & pronunciation tutor. Search a song, upload its audio, 
 - Popularity stats UI: `artifacts/web/src/components/TrackCard.tsx` (lazy per-card stats); Trending section: `artifacts/web/src/pages/Landing.tsx`
 - Central error handler: `artifacts/api-server/src/app.ts`
 - Frontend pages: `artifacts/web/src/pages/`; raw-fetch upload calls: `artifacts/web/src/lib/api-extra.ts`
+- Zero-upload demo: `artifacts/web/src/data/demoTrack.ts` + `artifacts/web/public/demo/frere-jacques.mp3`; reproducible generator: `artifacts/web/scripts/generate-demo-audio.mjs`
 
 ## Architecture decisions
 
@@ -41,6 +42,7 @@ A music-driven language & pronunciation tutor. Search a song, upload its audio, 
 - **"I remember a lyric" search uses Musixmatch `track.search` with `q_lyrics`.** `identifyByLyric()` → `GET /tracks/identify?lyric=` (operationId `identifyTrack`, query-param-only so it IS in the spec). TrackSearch has a song/lyric mode toggle.
 - **"Discover by mood" maps fixed moods → lyric keyword queries.** `discoverByMood()` (server-side `MOOD_QUERIES` allowlist) → `GET /tracks/discover?mood=` (enum-validated; in the spec). Surfaces results on Landing via `TrackCard`. Lyric-powered recommendations, driven by what songs _say_ (`q` full-text), not titles.
 - **"Breakout Tracks" re-ranks the Musixmatch chart by a Songstats velocity score.** `getTrackVelocity()` derives momentum from Songstats `_current` vs `_total` counters + live `charts_current` (Shazam weighted highest) + fresh editorial-playlist share; `GET /tracks/breakout` (returns `BreakoutTrack[]` with `velocityScore`). Velocity is non-critical: a failed lookup degrades to score 0 (sinks to bottom). Has its own 10-min velocity cache, separate from the stats cache.
+- **The zero-upload demo is a client-side sentinel track, not persisted provider content.** Track id `-1` selects a bundled `TrackSession` for the public-domain “Frère Jacques” text plus an ElevenLabs-synthesized MP3 and character-alignment-derived word timings. Landing clears the prior session before selecting it; Listen and Practice disable the normal track-session request and use the bundled session/audio. Practice clips the shared MP3 to the active line, while learner grading still uses the normal live ElevenLabs STT route. Re-running `generate-demo-audio.mjs` requires `ELEVENLABS_API_KEY`, consumes provider credits, and overwrites both generated assets.
 
 ## Gotchas
 
