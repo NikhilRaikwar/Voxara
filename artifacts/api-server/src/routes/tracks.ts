@@ -9,11 +9,8 @@ import {
   getTrack,
   getLyrics,
   getRichsync,
-  getTranslatedSubtitles,
-  getLyricsTranslation,
-  type MxRichLine,
-  type MxSubtitleLine,
 } from "../lib/musixmatch";
+import { translateLines, translationAvailable } from "../lib/translate";
 
 const router: IRouter = Router();
 
@@ -64,27 +61,6 @@ router.get("/tracks/search", async (req, res, next) => {
   }
 });
 
-// Attach the best-matching translation to each richsync line by timestamp.
-function attachTranslations(
-  lines: MxRichLine[],
-  subtitles: MxSubtitleLine[] | null,
-): (string | null)[] {
-  if (!subtitles || subtitles.length === 0) return lines.map(() => null);
-  return lines.map((line) => {
-    let best: MxSubtitleLine | null = null;
-    let bestDiff = Infinity;
-    for (const sub of subtitles) {
-      const diff = Math.abs(sub.time - line.ts);
-      if (diff < bestDiff) {
-        bestDiff = diff;
-        best = sub;
-      }
-    }
-    // Only accept a translation that lines up reasonably closely.
-    return best && bestDiff <= 4 ? best.text : null;
-  });
-}
-
 router.get("/tracks/session", async (req, res, next) => {
   try {
     const trackId = Number(req.query.trackId);
@@ -103,10 +79,9 @@ router.get("/tracks/session", async (req, res, next) => {
       return;
     }
 
-    const [lyrics, richsync, subtitles] = await Promise.all([
+    const [lyrics, richsync] = await Promise.all([
       getLyrics(trackId),
       getRichsync(trackId),
-      getTranslatedSubtitles(trackId, lang),
     ]);
 
     let lines: any[] = [];
@@ -115,7 +90,12 @@ router.get("/tracks/session", async (req, res, next) => {
 
     if (richsync && richsync.length > 0) {
       hasRichsync = true;
-      const translations = attachTranslations(richsync, subtitles);
+      // Musixmatch translations are unavailable on this plan, so we translate
+      // the synced lines on demand into the learner's target language.
+      const translations = await translateLines(
+        richsync.map((l) => l.text),
+        lang,
+      );
       hasTranslation = translations.some((t) => t !== null);
       lines = richsync.map((line, idx) => ({
         index: idx,
@@ -127,17 +107,19 @@ router.get("/tracks/session", async (req, res, next) => {
       }));
     }
 
-    // Fallback: no per-word timing; surface plain lyrics + best-effort translation.
+    // Fallback: no per-word timing; surface plain lyrics + a full translation.
     let plainLyrics: string | null = null;
     if (!hasRichsync) {
       plainLyrics = lyrics?.body ?? null;
-      if (!hasTranslation) {
-        const translated = await getLyricsTranslation(trackId, lang);
-        if (translated) {
+      if (plainLyrics && translationAvailable()) {
+        const sourceLines = plainLyrics.split(/\r?\n/);
+        const translated = await translateLines(sourceLines, lang);
+        if (translated.some((t) => t !== null)) {
           hasTranslation = true;
-          plainLyrics = plainLyrics
-            ? `${plainLyrics}\n\n— — —\n\n${translated}`
-            : translated;
+          const merged = sourceLines
+            .map((src, i) => translated[i] ?? src)
+            .join("\n");
+          plainLyrics = `${plainLyrics}\n\n— — —\n\n${merged}`;
         }
       }
     }

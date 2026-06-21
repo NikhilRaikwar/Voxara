@@ -1,0 +1,3 @@
+- [Orval + TanStack Query v5 queryKey](orval-react-query-querykey.md) — generated hooks require queryKey in options; pass getXQueryKey() at call sites, don't edit generated files.
+- [External provider error masking](provider-error-status-codes.md) — central handler masks all 5xx as generic; classify account/quota errors (LALAL, ElevenLabs) as 4xx so messages reach the user.
+- [LLM translation fallback](llm-translation-fallback.md) — Musixmatch translation is dead on this plan; lyrics are translated via the OpenAI integration instead.

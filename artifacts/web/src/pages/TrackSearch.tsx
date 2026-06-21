@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Search as SearchIcon, ArrowLeft } from "lucide-react";
-import { useSearchTracks } from "@workspace/api-client-react";
+import { useSearchTracks, getSearchTracksQueryKey } from "@workspace/api-client-react";
 import { useSession } from "../store/SessionContext";
 import { TrackCard } from "../components/TrackCard";
 
@@ -15,8 +15,13 @@ export default function TrackSearch() {
   const { setCurrentTrack } = useSession();
 
   const { data: searchResults, isLoading, isError } = useSearchTracks(
-    { q: activeQuery }, 
-    { query: { enabled: !!activeQuery } }
+    { q: activeQuery },
+    {
+      query: {
+        enabled: !!activeQuery,
+        queryKey: getSearchTracksQueryKey({ q: activeQuery }),
+      },
+    }
   );
 
   const handleSearch = (e: React.FormEvent) => {

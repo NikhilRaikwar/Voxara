@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useGetIsolationStatus } from '@workspace/api-client-react';
+import { useGetIsolationStatus, getGetIsolationStatusQueryKey } from '@workspace/api-client-react';
 import { uploadIsolation } from '../lib/api-extra';
 
 export function useAudioIsolation() {
@@ -12,6 +12,7 @@ export function useAudioIsolation() {
     { 
       query: { 
         enabled: !!taskId, 
+        queryKey: getGetIsolationStatusQueryKey({ taskId: taskId! }),
         refetchInterval: (query) => {
           if (!query.state.data) return 2500;
           const status = query.state.data.status;
@@ -58,7 +59,14 @@ export function useAudioIsolation() {
     currentStatus = 'processing'; // initial poll
   }
 
-  const activeError = error || statusData?.error || (isError ? pollError?.error : null);
+  const pollErrorMessage =
+    pollError instanceof Error
+      ? pollError.message
+      : pollError
+        ? String(pollError)
+        : null;
+  const activeError =
+    error || statusData?.error || (isError ? pollErrorMessage : null);
 
   return {
     startIsolation,

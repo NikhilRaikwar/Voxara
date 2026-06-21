@@ -1,5 +1,17 @@
 import { GradingResult } from "@workspace/api-client-react";
 
+async function errorMessage(res: Response, fallback: string): Promise<string> {
+  try {
+    const data = await res.json();
+    if (data && typeof data.error === "string" && data.error.trim()) {
+      return data.error;
+    }
+  } catch {
+    // Body wasn't JSON; fall through to the generic message.
+  }
+  return fallback;
+}
+
 export async function uploadIsolation(file: File): Promise<{ taskId: string; status: string }> {
   const formData = new FormData();
   formData.append('file', file);
@@ -7,7 +19,7 @@ export async function uploadIsolation(file: File): Promise<{ taskId: string; sta
     method: 'POST',
     body: formData,
   });
-  if (!res.ok) throw new Error('Upload failed');
+  if (!res.ok) throw new Error(await errorMessage(res, 'Upload failed'));
   return res.json();
 }
 
@@ -21,6 +33,6 @@ export async function gradeRecording(file: Blob, expected: string, languageCode?
     method: 'POST',
     body: formData,
   });
-  if (!res.ok) throw new Error('Grading failed');
+  if (!res.ok) throw new Error(await errorMessage(res, 'Grading failed'));
   return res.json();
 }

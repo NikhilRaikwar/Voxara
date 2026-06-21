@@ -52,6 +52,14 @@ export async function transcribe(
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
     logger.warn({ status: res.status, detail }, "ElevenLabs STT failed");
+    // Account/quota/auth problems are not our fault — surface them (4xx) so the
+    // message reaches the user instead of being masked by the generic handler.
+    if ([401, 402, 403, 429].includes(res.status)) {
+      throw new ElevenLabsError(
+        "Speech grading is unavailable: the ElevenLabs account rejected the request (check the API key, plan or quota).",
+        402,
+      );
+    }
     throw new ElevenLabsError(`ElevenLabs STT HTTP ${res.status}`, 502);
   }
 

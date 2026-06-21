@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
 import { ArrowLeft, Mic, Square, Play, RefreshCw, ChevronRight } from "lucide-react";
-import { useGetTrackSession } from "@workspace/api-client-react";
+import { useGetTrackSession, getGetTrackSessionQueryKey } from "@workspace/api-client-react";
 import { useSession } from "../store/SessionContext";
 import { useMicRecording } from "../hooks/useMicRecording";
 import { gradeRecording } from "../lib/api-extra";
@@ -23,7 +23,15 @@ export default function PracticeMode() {
 
   const { data: sessionData } = useGetTrackSession(
     { trackId: currentTrack.trackId, selected_language: targetLanguage },
-    { query: { enabled: !!currentTrack.trackId } }
+    {
+      query: {
+        enabled: !!currentTrack.trackId,
+        queryKey: getGetTrackSessionQueryKey({
+          trackId: currentTrack.trackId,
+          selected_language: targetLanguage,
+        }),
+      },
+    }
   );
 
   const line = sessionData?.lines[lineIndex];

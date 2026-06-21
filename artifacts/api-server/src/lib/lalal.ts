@@ -12,6 +12,22 @@ export class LalalError extends Error {
   }
 }
 
+// Account/plan limitations from LALAL are not server faults — surface their
+// message to the user (4xx) so it isn't masked by the generic 5xx handler.
+function classifyLalalError(message: string): number {
+  const m = message.toLowerCase();
+  if (
+    m.includes("premium") ||
+    m.includes("license") ||
+    m.includes("limit") ||
+    m.includes("subscription") ||
+    m.includes("minutes")
+  ) {
+    return 402;
+  }
+  return 502;
+}
+
 function license(): string {
   const key = process.env.LALAL_API_KEY;
   if (!key) throw new LalalError("LALAL_API_KEY is not configured", 500);
@@ -40,7 +56,8 @@ export async function uploadFile(
   const body = (await res.json().catch(() => null)) as any;
   if (!res.ok || body?.status !== "success" || !body?.id) {
     logger.warn({ status: res.status, body }, "LALAL upload failed");
-    throw new LalalError(body?.error || "LALAL upload failed", 502);
+    const message = body?.error || "LALAL upload failed";
+    throw new LalalError(message, classifyLalalError(message));
   }
   return body.id as string;
 }
@@ -69,7 +86,8 @@ export async function startSplit(fileId: string): Promise<void> {
   const body = (await res.json().catch(() => null)) as any;
   if (!res.ok || body?.status !== "success") {
     logger.warn({ status: res.status, body }, "LALAL split failed");
-    throw new LalalError(body?.error || "LALAL split failed", 502);
+    const message = body?.error || "LALAL split failed";
+    throw new LalalError(message, classifyLalalError(message));
   }
 }
 

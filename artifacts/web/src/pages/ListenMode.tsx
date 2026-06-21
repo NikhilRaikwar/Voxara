@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { ArrowLeft, UploadCloud, PlayCircle, PauseCircle, Loader2 } from "lucide-react";
-import { useGetTrackSession } from "@workspace/api-client-react";
+import { useGetTrackSession, getGetTrackSessionQueryKey } from "@workspace/api-client-react";
 import { useSession } from "../store/SessionContext";
 import { useAudioIsolation } from "../hooks/useAudioIsolation";
 import { Button } from "../components/ui/button";
@@ -17,7 +17,15 @@ export default function ListenMode() {
 
   const { data: sessionData, isLoading: isLoadingSession, isError: isSessionError } = useGetTrackSession(
     { trackId: currentTrack.trackId, selected_language: targetLanguage },
-    { query: { enabled: !!currentTrack.trackId } }
+    {
+      query: {
+        enabled: !!currentTrack.trackId,
+        queryKey: getGetTrackSessionQueryKey({
+          trackId: currentTrack.trackId,
+          selected_language: targetLanguage,
+        }),
+      },
+    }
   );
 
   const { startIsolation, status: isolationStatus, progress, vocalUrl: isolatedUrl, error: isolationError } = useAudioIsolation();
