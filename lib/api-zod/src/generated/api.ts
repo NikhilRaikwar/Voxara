@@ -35,7 +35,8 @@ export const GetFeaturedTracksResponseItem = zod.object({
   "albumName": zod.string().nullish(),
   "albumCoverUrl": zod.string().nullish(),
   "hasLyrics": zod.boolean(),
-  "hasRichsync": zod.boolean(),
+  "hasRichsync": zod.boolean().describe('Whether word-level timing is available (best experience).'),
+  "hasSubtitles": zod.boolean().describe('Whether line-level subtitle timing is available. Used to predict the \"line practice\" tier before a session is resolved.\n'),
   "hasTranslation": zod.boolean()
 })
 export const GetFeaturedTracksResponse = zod.array(GetFeaturedTracksResponseItem)
@@ -59,7 +60,8 @@ export const SearchTracksResponseItem = zod.object({
   "albumName": zod.string().nullish(),
   "albumCoverUrl": zod.string().nullish(),
   "hasLyrics": zod.boolean(),
-  "hasRichsync": zod.boolean(),
+  "hasRichsync": zod.boolean().describe('Whether word-level timing is available (best experience).'),
+  "hasSubtitles": zod.boolean().describe('Whether line-level subtitle timing is available. Used to predict the \"line practice\" tier before a session is resolved.\n'),
   "hasTranslation": zod.boolean()
 })
 export const SearchTracksResponse = zod.array(SearchTracksResponseItem)
@@ -83,7 +85,8 @@ export const GetTrendingTracksResponseItem = zod.object({
   "albumName": zod.string().nullish(),
   "albumCoverUrl": zod.string().nullish(),
   "hasLyrics": zod.boolean(),
-  "hasRichsync": zod.boolean(),
+  "hasRichsync": zod.boolean().describe('Whether word-level timing is available (best experience).'),
+  "hasSubtitles": zod.boolean().describe('Whether line-level subtitle timing is available. Used to predict the \"line practice\" tier before a session is resolved.\n'),
   "hasTranslation": zod.boolean()
 })
 export const GetTrendingTracksResponse = zod.array(GetTrendingTracksResponseItem)
@@ -131,7 +134,8 @@ export const GetTrackSessionResponse = zod.object({
   "albumName": zod.string().nullish(),
   "albumCoverUrl": zod.string().nullish(),
   "hasLyrics": zod.boolean(),
-  "hasRichsync": zod.boolean(),
+  "hasRichsync": zod.boolean().describe('Whether word-level timing is available (best experience).'),
+  "hasSubtitles": zod.boolean().describe('Whether line-level subtitle timing is available. Used to predict the \"line practice\" tier before a session is resolved.\n'),
   "hasTranslation": zod.boolean()
 }),
   "lines": zod.array(zod.object({

@@ -200,6 +200,7 @@ components:
         - artistName
         - hasLyrics
         - hasRichsync
+        - hasSubtitles
         - hasTranslation
       properties:
         trackId:
@@ -218,6 +219,12 @@ components:
           type: boolean
         hasRichsync:
           type: boolean
+          description: Whether word-level timing is available (best experience).
+        hasSubtitles:
+          type: boolean
+          description: >
+            Whether line-level subtitle timing is available. Used to predict the
+            "line practice" tier before a session is resolved.
         hasTranslation:
           type: boolean
     TrackStats:

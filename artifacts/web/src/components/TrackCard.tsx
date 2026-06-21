@@ -95,9 +95,11 @@ export function TrackCard({ track, onClick, className = '', showStats = true }: 
           
           <div className="flex flex-wrap gap-1.5 mt-2">
             {track.hasRichsync ? (
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary hover:bg-primary/20 border-none">Synced</Badge>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary hover:bg-primary/20 border-none" title="Word-by-word highlighting and pronunciation grading">Word-by-word</Badge>
+            ) : track.hasSubtitles ? (
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary hover:bg-primary/20 border-none" title="Line-level highlighting and practice">Line practice</Badge>
             ) : (
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground border-border/50">Plain</Badge>
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground border-border/50" title="Read along only — no timing for practice">Read-only</Badge>
             )}
             
             {track.hasTranslation && (

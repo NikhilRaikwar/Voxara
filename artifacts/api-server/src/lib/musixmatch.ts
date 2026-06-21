@@ -63,6 +63,7 @@ export interface MxTrack {
   albumCoverUrl: string | null;
   hasLyrics: boolean;
   hasRichsync: boolean;
+  hasSubtitles: boolean;
   hasTranslation: boolean;
 }
 
@@ -85,6 +86,7 @@ function mapTrack(t: any): MxTrack {
     albumCoverUrl: pickCover(t),
     hasLyrics: t.has_lyrics === 1,
     hasRichsync: t.has_richsync === 1,
+    hasSubtitles: t.has_subtitles === 1,
     hasTranslation: t.has_subtitles === 1 || t.has_richsync === 1,
   };
 }

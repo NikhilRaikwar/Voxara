@@ -16,6 +16,10 @@ export interface Track {
   /** @nullable */
   albumCoverUrl?: string | null;
   hasLyrics: boolean;
+  /** Whether word-level timing is available (best experience). */
   hasRichsync: boolean;
+  /** Whether line-level subtitle timing is available. Used to predict the "line practice" tier before a session is resolved.
+   */
+  hasSubtitles: boolean;
   hasTranslation: boolean;
 }
