@@ -148,8 +148,9 @@ export const GetTrackSessionResponse = zod.object({
 })),
   "plainLyrics": zod.string().nullish().describe('Plain-text lyrics fallback when richsync is unavailable.'),
   "copyright": zod.string().describe('Mandatory Musixmatch copyright notice to render alongside lyrics.'),
-  "hasRichsync": zod.boolean(),
+  "hasRichsync": zod.boolean().describe('Whether word-level timing is available (syncLevel == \"word\").'),
   "hasTranslation": zod.boolean(),
+  "syncLevel": zod.enum(['word', 'line', 'none']).describe('Timing granularity available for this track — \"word\" (per-word richsync), \"line\" (line-level subtitles), or \"none\" (plain lyrics only, Practice unavailable).\n'),
   "targetLanguage": zod.string()
 })
 

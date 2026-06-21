@@ -20,4 +20,5 @@ export * from './lyricWord';
 export * from './searchTracksParams';
 export * from './track';
 export * from './trackSession';
+export * from './trackSessionSyncLevel';
 export * from './trackStats';

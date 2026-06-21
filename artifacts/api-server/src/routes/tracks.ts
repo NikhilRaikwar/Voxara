@@ -11,6 +11,7 @@ import {
   getTrack,
   getLyrics,
   getRichsync,
+  getSubtitles,
   getChartTracks,
 } from "../lib/musixmatch";
 import { getTrackStats } from "../lib/songstats";
@@ -117,11 +118,11 @@ router.get("/tracks/session", async (req, res, next) => {
     ]);
 
     let lines: any[] = [];
-    let hasRichsync = false;
+    let syncLevel: "word" | "line" | "none" = "none";
     let hasTranslation = false;
 
     if (richsync && richsync.length > 0) {
-      hasRichsync = true;
+      syncLevel = "word";
       // Musixmatch translations are unavailable on this plan, so we translate
       // the synced lines on demand into the learner's target language.
       const translations = await translateLines(
@@ -137,11 +138,40 @@ router.get("/tracks/session", async (req, res, next) => {
         words: line.words,
         translation: translations[idx],
       }));
+    } else {
+      // Middle tier: no word-level richsync, but Musixmatch may still have
+      // line-level timing via subtitles. This keeps Listen highlighting (per
+      // line) and Practice + grading available for many more songs.
+      const subtitles = await getSubtitles(trackId);
+      const timed = (subtitles ?? []).filter((l) => l.text.trim().length > 0);
+      if (timed.length > 0) {
+        syncLevel = "line";
+        const translations = await translateLines(
+          timed.map((l) => l.text),
+          lang,
+        );
+        hasTranslation = translations.some((t) => t !== null);
+        lines = timed.map((line, idx) => {
+          const next = idx + 1 < timed.length ? timed[idx + 1].time : null;
+          // Guard against non-increasing LRC timestamps so every line keeps a
+          // positive duration (else highlighting/model playback stops instantly).
+          const te = next !== null ? Math.max(next, line.time + 0.5) : line.time + 6;
+          return {
+            index: idx,
+            ts: line.time,
+            te,
+            text: line.text,
+            words: [],
+            translation: translations[idx],
+          };
+        });
+      }
     }
 
-    // Fallback: no per-word timing; surface plain lyrics + a full translation.
+    // Last-resort fallback: no timing at all; surface plain lyrics + a full
+    // translation so the learner can still read along (Practice is disabled).
     let plainLyrics: string | null = null;
-    if (!hasRichsync) {
+    if (syncLevel === "none") {
       plainLyrics = lyrics?.body ?? null;
       if (plainLyrics && translationAvailable()) {
         const sourceLines = plainLyrics.split(/\r?\n/);
@@ -161,8 +191,9 @@ router.get("/tracks/session", async (req, res, next) => {
       lines,
       plainLyrics,
       copyright: lyrics?.copyright ?? "",
-      hasRichsync,
+      hasRichsync: syncLevel === "word",
       hasTranslation,
+      syncLevel,
       targetLanguage: lang,
     };
 

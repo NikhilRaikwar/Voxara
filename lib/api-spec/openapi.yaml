@@ -287,6 +287,7 @@ components:
         - copyright
         - hasRichsync
         - hasTranslation
+        - syncLevel
         - targetLanguage
       properties:
         track:
@@ -303,8 +304,16 @@ components:
           description: Mandatory Musixmatch copyright notice to render alongside lyrics.
         hasRichsync:
           type: boolean
+          description: Whether word-level timing is available (syncLevel == "word").
         hasTranslation:
           type: boolean
+        syncLevel:
+          type: string
+          enum: [word, line, none]
+          description: >
+            Timing granularity available for this track — "word" (per-word
+            richsync), "line" (line-level subtitles), or "none" (plain lyrics
+            only, Practice unavailable).
         targetLanguage:
           type: string
     GradedWord:

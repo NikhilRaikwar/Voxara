@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
-import { ArrowLeft, UploadCloud, PlayCircle, PauseCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, UploadCloud, PlayCircle, PauseCircle, Loader2, Mic } from "lucide-react";
 import { useGetTrackSession, getGetTrackSessionQueryKey } from "@workspace/api-client-react";
 import { useSession } from "../store/SessionContext";
 import { useAudioIsolation } from "../hooks/useAudioIsolation";
@@ -46,10 +46,16 @@ export default function ListenMode() {
     const time = audioRef.current.currentTime;
     setCurrentTime(time);
     
-    if (sessionData && sessionData.hasRichsync) {
+    if (sessionData && sessionData.lines.length > 0) {
       const idx = sessionData.lines.findIndex(l => time >= l.ts && time <= l.te);
       if (idx !== -1) setActiveLineIdx(idx);
     }
+  };
+
+  const goToPractice = (lineIdx: number) => {
+    if (audioRef.current) audioRef.current.pause();
+    setIsPlaying(false);
+    setLocation(`/practice?line=${lineIdx}`);
   };
 
   const togglePlay = () => {
@@ -149,13 +155,29 @@ export default function ListenMode() {
         <div className="text-center py-12 text-destructive">Failed to load lyrics session.</div>
       ) : (
         <div className="flex-1 space-y-8 pb-20">
-          {!sessionData.hasRichsync && (
+          {sessionData.syncLevel === 'none' && (
             <div className="bg-muted text-muted-foreground p-4 rounded-xl text-center text-sm mb-8">
-              Word-sync is not available for this track. Showing plain lyrics. Practice mode disabled.
+              Timing isn't available for this track, so we're showing the plain lyrics. Listening and reading still work, but pronunciation practice needs a synced track.
             </div>
           )}
-          
-          {sessionData.hasRichsync ? (
+
+          {sessionData.syncLevel !== 'none' && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-primary/5 border border-primary/15 rounded-2xl p-4 mb-2">
+              <div>
+                <p className="font-semibold text-foreground">Ready to practice?</p>
+                <p className="text-sm text-muted-foreground">
+                  {sessionData.syncLevel === 'word'
+                    ? 'Record yourself and get word-by-word pronunciation grading.'
+                    : 'Record yourself line by line and get pronunciation grading.'}
+                </p>
+              </div>
+              <Button size="lg" className="shrink-0 gap-2" onClick={() => goToPractice(0)}>
+                <Mic className="w-4 h-4" /> Start Practice
+              </Button>
+            </div>
+          )}
+
+          {sessionData.syncLevel !== 'none' ? (
             <div className="space-y-6">
               {sessionData.lines.map((line, idx) => {
                 const isActive = activeLineIdx === idx;
@@ -165,32 +187,37 @@ export default function ListenMode() {
                   <div key={idx} className={`p-4 rounded-xl transition-all duration-300 group ${isActive ? 'bg-card border-primary/30 border shadow-sm scale-105 transform origin-left' : 'opacity-60 hover:opacity-100'}`}>
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1 flex flex-wrap gap-x-1.5 gap-y-1 text-2xl md:text-3xl font-bold">
-                        {line.words.map((word, wIdx) => {
-                          const isWordActive = currentTime >= word.start && currentTime <= word.end;
-                          const isWordPast = currentTime > word.end;
-                          return (
-                            <span 
-                              key={wIdx} 
-                              className={`transition-colors duration-200 cursor-pointer hover:text-primary ${isWordActive ? 'text-primary' : isWordPast ? 'text-foreground' : 'text-muted-foreground/50'}`}
-                              title={line.translation || undefined}
-                            >
-                              {word.text}
-                            </span>
-                          );
-                        })}
+                        {line.words.length > 0 ? (
+                          line.words.map((word, wIdx) => {
+                            const isWordActive = currentTime >= word.start && currentTime <= word.end;
+                            const isWordPast = currentTime > word.end;
+                            return (
+                              <span 
+                                key={wIdx} 
+                                className={`transition-colors duration-200 cursor-pointer hover:text-primary ${isWordActive ? 'text-primary' : isWordPast ? 'text-foreground' : 'text-muted-foreground/50'}`}
+                                title={line.translation || undefined}
+                              >
+                                {word.text}
+                              </span>
+                            );
+                          })
+                        ) : (
+                          <span
+                            className={`transition-colors duration-200 ${isActive ? 'text-primary' : isPast ? 'text-foreground' : 'text-muted-foreground/50'}`}
+                            title={line.translation || undefined}
+                          >
+                            {line.text}
+                          </span>
+                        )}
                       </div>
                       
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => {
-                          if (audioRef.current) audioRef.current.pause();
-                          setIsPlaying(false);
-                          setLocation(`/practice?line=${idx}`);
-                        }}
+                        className="shrink-0"
+                        onClick={() => goToPractice(idx)}
                       >
-                        Practice Line
+                        Practice
                       </Button>
                     </div>
                     {isActive && line.translation && (

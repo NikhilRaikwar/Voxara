@@ -206,6 +206,21 @@ export async function getTranslatedSubtitles(
   return parseLrc(raw);
 }
 
+// Original (untranslated) subtitle with line-level timing. Used as a middle-tier
+// sync source when word-level richsync is unavailable, so Listen highlighting and
+// Practice can still work (per line rather than per word).
+export async function getSubtitles(
+  trackId: number,
+): Promise<MxSubtitleLine[] | null> {
+  const body = await call("track.subtitle.get", {
+    track_id: trackId,
+    subtitle_format: "lrc",
+  });
+  const raw = body?.subtitle?.subtitle_body;
+  if (!raw) return null;
+  return parseLrc(raw);
+}
+
 function parseLrc(lrc: string): MxSubtitleLine[] {
   const lines: MxSubtitleLine[] = [];
   for (const row of lrc.split(/\r?\n/)) {

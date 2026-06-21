@@ -86,6 +86,19 @@ export interface LyricLine {
   translation?: string | null;
 }
 
+/**
+ * Timing granularity available for this track — "word" (per-word richsync), "line" (line-level subtitles), or "none" (plain lyrics only, Practice unavailable).
+
+ */
+export type TrackSessionSyncLevel = typeof TrackSessionSyncLevel[keyof typeof TrackSessionSyncLevel];
+
+
+export const TrackSessionSyncLevel = {
+  word: 'word',
+  line: 'line',
+  none: 'none',
+} as const;
+
 export interface TrackSession {
   track: Track;
   lines: LyricLine[];
@@ -96,8 +109,12 @@ export interface TrackSession {
   plainLyrics?: string | null;
   /** Mandatory Musixmatch copyright notice to render alongside lyrics. */
   copyright: string;
+  /** Whether word-level timing is available (syncLevel == "word"). */
   hasRichsync: boolean;
   hasTranslation: boolean;
+  /** Timing granularity available for this track — "word" (per-word richsync), "line" (line-level subtitles), or "none" (plain lyrics only, Practice unavailable).
+   */
+  syncLevel: TrackSessionSyncLevel;
   targetLanguage: string;
 }
 

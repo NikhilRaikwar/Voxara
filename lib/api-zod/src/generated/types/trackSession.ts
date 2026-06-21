@@ -7,6 +7,7 @@
  */
 import type { LyricLine } from './lyricLine';
 import type { Track } from './track';
+import type { TrackSessionSyncLevel } from './trackSessionSyncLevel';
 
 export interface TrackSession {
   track: Track;
@@ -18,7 +19,11 @@ export interface TrackSession {
   plainLyrics?: string | null;
   /** Mandatory Musixmatch copyright notice to render alongside lyrics. */
   copyright: string;
+  /** Whether word-level timing is available (syncLevel == "word"). */
   hasRichsync: boolean;
   hasTranslation: boolean;
+  /** Timing granularity available for this track — "word" (per-word richsync), "line" (line-level subtitles), or "none" (plain lyrics only, Practice unavailable).
+   */
+  syncLevel: TrackSessionSyncLevel;
   targetLanguage: string;
 }
