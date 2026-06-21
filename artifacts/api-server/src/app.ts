@@ -30,7 +30,43 @@ app.use(
     },
   }),
 );
-app.use(cors());
+
+// Restrict CORS to the app's own origins so third-party websites cannot drive
+// paid provider endpoints from visitors' browsers.
+// In production, REPLIT_DOMAINS is a comma-separated list of public hostnames.
+const allowedOrigins: Set<string> = new Set(
+  (process.env.REPLIT_DOMAINS ?? "")
+    .split(",")
+    .map((d) => d.trim())
+    .filter(Boolean)
+    .flatMap((d) => [`https://${d}`, `http://${d}`]),
+);
+
+app.use(
+  cors({
+    origin(origin, callback) {
+      // Allow same-origin / server-to-server requests (no Origin header).
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      // Allow localhost variants in development.
+      if (
+        process.env.NODE_ENV !== "production" &&
+        /^https?:\/\/localhost(:\d+)?$/.test(origin)
+      ) {
+        callback(null, true);
+        return;
+      }
+      if (allowedOrigins.has(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(new Error("Not allowed by CORS"));
+    },
+  }),
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

@@ -16,6 +16,7 @@ import {
 } from "../lib/musixmatch";
 import { getTrackStats } from "../lib/songstats";
 import { translateLines, translationAvailable } from "../lib/translate";
+import { sessionLimiter, tracksLimiter } from "../middlewares/rateLimiter";
 
 const router: IRouter = Router();
 
@@ -29,7 +30,7 @@ const FEATURED_QUERIES: { q_track: string; q_artist: string }[] = [
   { q_track: "Volare", q_artist: "Domenico Modugno" },
 ];
 
-router.get("/tracks/featured", async (req, res, next) => {
+router.get("/tracks/featured", tracksLimiter, async (req, res, next) => {
   try {
     const results = await Promise.all(
       FEATURED_QUERIES.map(async (q) => {
@@ -45,7 +46,7 @@ router.get("/tracks/featured", async (req, res, next) => {
   }
 });
 
-router.get("/tracks/search", async (req, res, next) => {
+router.get("/tracks/search", tracksLimiter, async (req, res, next) => {
   try {
     const q = typeof req.query.q === "string" ? req.query.q : undefined;
     const q_track =
@@ -66,7 +67,7 @@ router.get("/tracks/search", async (req, res, next) => {
   }
 });
 
-router.get("/tracks/trending", async (req, res, next) => {
+router.get("/tracks/trending", tracksLimiter, async (req, res, next) => {
   try {
     const tracks = await getChartTracks();
     res.json(GetTrendingTracksResponse.parse(tracks));
@@ -76,7 +77,7 @@ router.get("/tracks/trending", async (req, res, next) => {
   }
 });
 
-router.get("/tracks/stats", async (req, res, next) => {
+router.get("/tracks/stats", tracksLimiter, async (req, res, next) => {
   try {
     const trackName =
       typeof req.query.trackName === "string" ? req.query.trackName : "";
@@ -94,7 +95,7 @@ router.get("/tracks/stats", async (req, res, next) => {
   }
 });
 
-router.get("/tracks/session", async (req, res, next) => {
+router.get("/tracks/session", sessionLimiter, async (req, res, next) => {
   try {
     const trackId = Number(req.query.trackId);
     if (!Number.isFinite(trackId)) {
