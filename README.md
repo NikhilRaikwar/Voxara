@@ -11,9 +11,9 @@
 </div>
 
 Voxara turns songs into interactive listening and pronunciation lessons. Search
-for a track, isolate its vocals, follow time-synced lyrics, read translations,
-practice a line aloud, and receive word-by-word feedback—all in one multilingual
-learning flow.
+by title, artist, remembered lyric, or mood; follow time-synced lyrics; hear an
+AI-spoken reference line; practice aloud; and receive word-by-word feedback—all
+in one multilingual learning flow.
 
 Built for **Musicathon 2026**, Voxara uses Musixmatch Pro as its catalog, lyrics,
 timing, and discovery foundation. The core experience depends on Musixmatch data;
@@ -21,9 +21,14 @@ it is not a decorative integration.
 
 ## What learners can do
 
-- **Discover music:** search by title or artist and explore chart-backed tracks.
-- **Hear every word:** upload authorized audio and isolate the vocal stem.
-- **Follow the lyrics:** track the active word using Musixmatch richsync timing.
+- **Find the right song:** search by title, artist, or a lyric fragment you
+  remember.
+- **Discover by feeling:** browse mood-based results and breakout tracks ranked
+  with Musixmatch chart data plus Songstats momentum.
+- **Start without an upload:** read lyrics, translations, and practice timed
+  lines immediately using ElevenLabs model pronunciation.
+- **Hear isolated vocals:** optionally upload authorized audio for synced vocal
+  playback and word highlighting.
 - **Understand the meaning:** read translated lines in a choice of 33 languages.
 - **Practice pronunciation:** record a line and see matched, substituted, and
   missing words.
@@ -38,20 +43,19 @@ flowchart LR
     Learner(["Language learner"])
 
     subgraph Discover["1 · Discover"]
-      Search["Search or browse charts"]
+      Search["Title · lyric · mood · breakout"]
       Select["Select a track"]
     end
 
-    subgraph Prepare["2 · Prepare"]
-      Upload["Upload authorized audio"]
-      Isolate["Isolate vocals"]
+    subgraph Prepare["2 · Prepare lesson"]
       Resolve["Resolve lyrics and timing"]
+      Model["Synthesize model pronunciation"]
     end
 
     subgraph Learn["3 · Listen and understand"]
       Sync["Follow synced lyrics"]
       Translate["Read line translation"]
-      Replay["Replay a line or word"]
+      Replay["Replay a model line"]
     end
 
     subgraph Practice["4 · Practice and improve"]
@@ -64,15 +68,19 @@ flowchart LR
     EL[("ElevenLabs")]
     SS[("Songstats")]
     Replit[("Replit")]
+    Upload["Optional audio upload"]
+    Isolate["Isolate vocals"]
 
-    Learner --> Search --> Select --> Upload --> Isolate --> Resolve
-    Resolve --> Sync --> Translate --> Replay --> Record --> Grade --> Recap
+    Learner --> Search --> Select --> Resolve --> Sync --> Translate --> Replay
+    Resolve --> Model --> Replay --> Record --> Grade --> Recap
     Recap -. "practice again" .-> Replay
+    Select -. "optional" .-> Upload --> Isolate --> Sync
 
     Search --> MXM
     Resolve --> MXM
     Search -. "optional stats" .-> SS
     Isolate --> EL
+    Model --> EL
     Record --> EL
     Replit -. "hosts web and API" .-> Resolve
 
@@ -84,7 +92,7 @@ flowchart LR
     classDef provider fill:#F3E8FF,stroke:#9333EA,color:#3B0764,stroke-width:2px;
     class Learner person;
     class Search,Select discover;
-    class Upload,Isolate,Resolve prepare;
+    class Upload,Isolate,Resolve,Model prepare;
     class Sync,Translate,Replay learn;
     class Record,Grade,Recap practice;
     class MXM,EL,SS,Replit provider;
@@ -102,12 +110,12 @@ Practice mode is enabled only when the selected track has reliable timing.
 
 ## Partner integrations
 
-| Partner | Surfaces used | Use in Voxara |
-| --- | --- | --- |
-| **Musixmatch Pro** | `track.search`, `track.get`, `chart.tracks.get`, `track.richsync.get`, `track.subtitle.get`, `track.lyrics.get` | Powers track discovery, canonical metadata, charts, synced highlighting, replay boundaries, lyric fallbacks, and copyright attribution. |
-| **ElevenLabs** | Audio Isolation API, `scribe_v1` speech-to-text | Produces a focused vocal stem and transcribes learner recordings for word-level grading. |
-| **Songstats** | Track search and statistics APIs | Optionally enriches track cards with streams, popularity, playlist placements, Shazams, TikTok views, and a Songstats link. |
-| **Replit** | Workspace, Secrets, managed OpenAI-compatible integration, Deployment | Hosts the web app and API, injects server-side credentials, supports runtime translation, and publishes the [live HTTPS demo](https://voxara.replit.app/). |
+| Partner            | Surfaces used                                                                                                                                          | Use in Voxara                                                                                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Musixmatch Pro** | `track.search` with title/artist/free-text/`q_lyrics`, `track.get`, `chart.tracks.get`, `track.richsync.get`, `track.subtitle.get`, `track.lyrics.get` | Powers relevance-ranked search, remembered-lyric identification, mood discovery, canonical metadata, charts, timed lessons, lyric fallbacks, and attribution. |
+| **ElevenLabs**     | Text to Speech, Audio Isolation, `scribe_v1` speech-to-text                                                                                            | Synthesizes each canonical lyric line for model pronunciation, optionally isolates uploaded vocals, and transcribes learner recordings for grading.           |
+| **Songstats**      | Track search and statistics APIs                                                                                                                       | Adds optional popularity data and a cached velocity score used to re-rank Musixmatch chart entries into Breakout Tracks.                                      |
+| **Replit**         | Workspace, Secrets, managed OpenAI-compatible integration, Deployment                                                                                  | Hosts the web app and API, injects server-side credentials, supports runtime translation, and publishes the [live HTTPS demo](https://voxara.replit.app/).    |
 
 Songstats enrichment is non-blocking. If its key or matching data is unavailable,
 lessons continue without popularity statistics. Translation falls back to
@@ -120,8 +128,11 @@ English instead of blocking the interface.
   schemas used across the workspace.
 - **Ephemeral learning sessions:** lyrics and recordings are not persisted to a
   product database.
-- **Bounded public endpoints:** validation, CORS restrictions, rate limits, and
-  structured logging protect provider-backed routes.
+- **Bounded public endpoints:** server-derived TTS text, allowlisted moods,
+  capped lyric queries, CORS restrictions, and route-specific rate limits
+  protect provider-backed routes.
+- **Breakout hardening:** short-lived non-lyric caching and in-flight request
+  deduplication reduce repeated Songstats fan-out.
 - **Graceful provider fallbacks:** optional enrichment never blocks the core
   Musixmatch learning flow.
 
