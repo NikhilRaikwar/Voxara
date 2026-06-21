@@ -1,4 +1,1 @@
-- [Orval + TanStack Query v5 queryKey](orval-react-query-querykey.md) — generated hooks require queryKey in options; pass getXQueryKey() at call sites, don't edit generated files.
-- [External provider error masking](provider-error-status-codes.md) — central handler masks all 5xx as generic; classify account/quota errors (LALAL, ElevenLabs) as 4xx so messages reach the user.
-- [LLM translation fallback](llm-translation-fallback.md) — Musixmatch translation is dead on this plan; lyrics are translated via the OpenAI integration instead.
-- [Songstats integration](songstats-integration.md) — charts 403 (trending uses Musixmatch chart); stats matched by name+artist, degrade gracefully, retry+cache against rate limits.
+- [api-server dev lifecycle](api-server-dev-lifecycle.md) — api-server `dev` is build+start (esbuild), NOT watch; new routes/code need a workflow restart, and missing deps fail the build, not just typecheck.

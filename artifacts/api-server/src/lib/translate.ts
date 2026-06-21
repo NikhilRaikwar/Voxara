@@ -41,6 +41,12 @@ export function languageName(code: string): string {
   return LANG_NAMES[code?.toLowerCase()] ?? code;
 }
 
+// The set of language codes the UI offers. Used to constrain the public
+// /translate endpoint to its intended purpose rather than an open proxy.
+export function isSupportedLanguage(code: string): boolean {
+  return typeof code === "string" && code.toLowerCase() in LANG_NAMES;
+}
+
 function baseUrl(): string | null {
   return process.env.AI_INTEGRATIONS_OPENAI_BASE_URL ?? null;
 }
