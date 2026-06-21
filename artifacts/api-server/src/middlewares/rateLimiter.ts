@@ -53,6 +53,25 @@ export const sessionLimiter = rateLimit({
 });
 
 /**
+ * Limit for the UI-translation endpoint.
+ * Each call fans out to a paid LLM to translate the UI string bundle. The client
+ * caches results per language in localStorage, so legitimate use is infrequent
+ * (roughly one call per language a user selects). 20 requests / 15 min per IP
+ * comfortably covers trying many languages while blocking use as an open,
+ * unthrottled translation proxy for credit-exhaustion abuse.
+ */
+export const translateLimiter = rateLimit({
+  windowMs: windowMs15,
+  max: 20,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    error:
+      "Too many translation requests from this IP. Please wait before trying again.",
+  },
+});
+
+/**
  * General limit for low-cost track lookup endpoints
  * (search, featured, trending, stats).
  * 60 requests / min per IP — generous for normal browsing, blocks scripted loops.
