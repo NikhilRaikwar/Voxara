@@ -91,6 +91,57 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+  /tracks/trending:
+    get:
+      operationId: getTrendingTracks
+      tags: [tracks]
+      summary: Trending tracks to learn
+      description: Currently popular tracks (Musixmatch top chart) suitable as learning material.
+      parameters:
+        - name: selected_language
+          in: query
+          required: false
+          schema:
+            type: string
+            default: en
+          description: Target language code used to indicate translation availability.
+      responses:
+        "200":
+          description: Trending tracks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Track"
+  /tracks/stats:
+    get:
+      operationId: getTrackStats
+      tags: [tracks]
+      summary: Cross-platform popularity stats for a track
+      description: >
+        Resolves real-world streaming, Shazam, playlist and TikTok stats for a track via
+        Songstats, matched by title and artist. Powers the popularity badges on track cards.
+      parameters:
+        - name: trackName
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Track title.
+        - name: artistName
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Artist name.
+      responses:
+        "200":
+          description: Popularity stats (fields are null when unavailable)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackStats"
   /tracks/session:
     get:
       operationId: getTrackSession
@@ -197,6 +248,31 @@ components:
           type: boolean
         hasTranslation:
           type: boolean
+    TrackStats:
+      type: object
+      required: [found]
+      properties:
+        found:
+          type: boolean
+          description: Whether a matching track was found on Songstats.
+        spotifyStreams:
+          type: ["number", "null"]
+          description: Total Spotify streams.
+        spotifyPopularity:
+          type: ["integer", "null"]
+          description: Spotify popularity index (0-100).
+        playlists:
+          type: ["integer", "null"]
+          description: Current Spotify playlist placements.
+        shazams:
+          type: ["number", "null"]
+          description: Total Shazams.
+        tiktokViews:
+          type: ["number", "null"]
+          description: Total TikTok video views using the track.
+        songstatsUrl:
+          type: ["string", "null"]
+          description: Link to the track's Songstats profile.
     LyricWord:
       type: object
       required: [text, start, end]

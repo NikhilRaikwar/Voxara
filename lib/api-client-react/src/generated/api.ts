@@ -20,11 +20,14 @@ import type {
   GetFeaturedTracksParams,
   GetIsolationStatusParams,
   GetTrackSessionParams,
+  GetTrackStatsParams,
+  GetTrendingTracksParams,
   HealthStatus,
   IsolationJob,
   SearchTracksParams,
   Track,
-  TrackSession
+  TrackSession,
+  TrackStats
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -275,6 +278,177 @@ export function useSearchTracks<TData = Awaited<ReturnType<typeof searchTracks>>
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getSearchTracksQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetTrendingTracksUrl = (params?: GetTrendingTracksParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/tracks/trending?${stringifiedParams}` : `/api/tracks/trending`
+}
+
+/**
+ * Currently popular tracks (Musixmatch top chart) suitable as learning material.
+ * @summary Trending tracks to learn
+ */
+export const getTrendingTracks = async (params?: GetTrendingTracksParams, options?: RequestInit): Promise<Track[]> => {
+
+  return customFetch<Track[]>(getGetTrendingTracksUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTrendingTracksQueryKey = (params?: GetTrendingTracksParams,) => {
+    return [
+    `/api/tracks/trending`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetTrendingTracksQueryOptions = <TData = Awaited<ReturnType<typeof getTrendingTracks>>, TError = ErrorType<unknown>>(params?: GetTrendingTracksParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTrendingTracks>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTrendingTracksQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTrendingTracks>>> = ({ signal }) => getTrendingTracks(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTrendingTracks>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTrendingTracksQueryResult = NonNullable<Awaited<ReturnType<typeof getTrendingTracks>>>
+export type GetTrendingTracksQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Trending tracks to learn
+ */
+
+export function useGetTrendingTracks<TData = Awaited<ReturnType<typeof getTrendingTracks>>, TError = ErrorType<unknown>>(
+ params?: GetTrendingTracksParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTrendingTracks>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTrendingTracksQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetTrackStatsUrl = (params: GetTrackStatsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/tracks/stats?${stringifiedParams}` : `/api/tracks/stats`
+}
+
+/**
+ * Resolves real-world streaming, Shazam, playlist and TikTok stats for a track via Songstats, matched by title and artist. Powers the popularity badges on track cards.
+
+ * @summary Cross-platform popularity stats for a track
+ */
+export const getTrackStats = async (params: GetTrackStatsParams, options?: RequestInit): Promise<TrackStats> => {
+
+  return customFetch<TrackStats>(getGetTrackStatsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetTrackStatsQueryKey = (params?: GetTrackStatsParams,) => {
+    return [
+    `/api/tracks/stats`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetTrackStatsQueryOptions = <TData = Awaited<ReturnType<typeof getTrackStats>>, TError = ErrorType<unknown>>(params: GetTrackStatsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTrackStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetTrackStatsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getTrackStats>>> = ({ signal }) => getTrackStats(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTrackStats>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetTrackStatsQueryResult = NonNullable<Awaited<ReturnType<typeof getTrackStats>>>
+export type GetTrackStatsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Cross-platform popularity stats for a track
+ */
+
+export function useGetTrackStats<TData = Awaited<ReturnType<typeof getTrackStats>>, TError = ErrorType<unknown>>(
+ params: GetTrackStatsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTrackStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetTrackStatsQueryOptions(params,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

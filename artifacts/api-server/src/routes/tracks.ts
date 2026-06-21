@@ -3,13 +3,17 @@ import {
   GetFeaturedTracksResponse,
   SearchTracksResponse,
   GetTrackSessionResponse,
+  GetTrendingTracksResponse,
+  GetTrackStatsResponse,
 } from "@workspace/api-zod";
 import {
   searchTracks as mxSearch,
   getTrack,
   getLyrics,
   getRichsync,
+  getChartTracks,
 } from "../lib/musixmatch";
+import { getTrackStats } from "../lib/songstats";
 import { translateLines, translationAvailable } from "../lib/translate";
 
 const router: IRouter = Router();
@@ -55,6 +59,34 @@ router.get("/tracks/search", async (req, res, next) => {
 
     const tracks = await mxSearch({ q, q_track, q_artist });
     res.json(SearchTracksResponse.parse(tracks));
+    return;
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/tracks/trending", async (req, res, next) => {
+  try {
+    const tracks = await getChartTracks();
+    res.json(GetTrendingTracksResponse.parse(tracks));
+    return;
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/tracks/stats", async (req, res, next) => {
+  try {
+    const trackName =
+      typeof req.query.trackName === "string" ? req.query.trackName : "";
+    const artistName =
+      typeof req.query.artistName === "string" ? req.query.artistName : "";
+    if (!trackName || !artistName) {
+      res.status(400).json({ error: "trackName and artistName are required" });
+      return;
+    }
+    const stats = await getTrackStats(trackName, artistName);
+    res.json(GetTrackStatsResponse.parse(stats));
     return;
   } catch (err) {
     next(err);

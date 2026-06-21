@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { Search, Music } from "lucide-react";
-import { useGetFeaturedTracks } from "@workspace/api-client-react";
+import { Search, Music, TrendingUp } from "lucide-react";
+import {
+  useGetFeaturedTracks,
+  useGetTrendingTracks,
+} from "@workspace/api-client-react";
 import { useSession } from "../store/SessionContext";
 import { TrackCard } from "../components/TrackCard";
 
@@ -11,6 +14,7 @@ export default function Landing() {
   const { targetLanguage, setCurrentTrack } = useSession();
 
   const { data: featuredTracks, isLoading } = useGetFeaturedTracks({ selected_language: targetLanguage });
+  const { data: trendingTracks, isLoading: trendingLoading } = useGetTrendingTracks({ selected_language: targetLanguage });
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +94,46 @@ export default function Landing() {
         ) : (
           <div className="text-center py-12 bg-card rounded-2xl border border-border/50 text-muted-foreground">
             No featured tracks found for this language.
+          </div>
+        )}
+      </div>
+
+      <div className="w-full mt-16 animate-in slide-in-from-bottom-12 duration-700 delay-500 fade-in fill-mode-both">
+        <div className="flex items-center gap-2 mb-2">
+          <TrendingUp className="w-5 h-5 text-primary" />
+          <h2 className="text-xl font-semibold">Trending Now</h2>
+        </div>
+        <p className="text-sm text-muted-foreground mb-6">
+          Today's most popular tracks — with real streaming, Shazam and playlist numbers.
+        </p>
+
+        {trendingLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3, 4, 5, 6].map(i => (
+              <div key={i} className="h-28 rounded-xl bg-muted/50 animate-pulse" />
+            ))}
+          </div>
+        ) : trendingTracks && trendingTracks.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {trendingTracks.map((track, i) => (
+              <div
+                key={track.trackId}
+                className="animate-in slide-in-from-bottom-4 fade-in fill-mode-both"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <TrackCard
+                  track={track}
+                  onClick={() => {
+                    setCurrentTrack(track);
+                    setLocation(`/listen`);
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12 bg-card rounded-2xl border border-border/50 text-muted-foreground">
+            Trending tracks are unavailable right now.
           </div>
         )}
       </div>

@@ -8,7 +8,7 @@ A music-driven language & pronunciation tutor. Search a song, upload its audio, 
 - `pnpm --filter @workspace/web run dev` — run the web frontend
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- Required secrets: `MUSIXMATCH_API_KEY`, `LALAL_API_KEY`, `ELEVENLABS_API_KEY`
+- Required secrets: `MUSIXMATCH_API_KEY`, `LALAL_API_KEY`, `ELEVENLABS_API_KEY`, `SONGSTATS_API_KEY`
 - Translation uses the Replit-managed OpenAI integration: `AI_INTEGRATIONS_OPENAI_BASE_URL`, `AI_INTEGRATIONS_OPENAI_API_KEY`
 
 ## Stack
@@ -23,7 +23,8 @@ A music-driven language & pronunciation tutor. Search a song, upload its audio, 
 
 - API contract: `lib/api-spec/openapi.yaml` → generates `lib/api-client-react` (hooks) and `lib/api-zod` (schemas)
 - Server routes: `artifacts/api-server/src/routes/` (`tracks.ts`, `isolation.ts`, `grade.ts`)
-- Provider clients: `artifacts/api-server/src/lib/` (`musixmatch.ts`, `lalal.ts`, `elevenlabs.ts`, `translate.ts`, `grading.ts`)
+- Provider clients: `artifacts/api-server/src/lib/` (`musixmatch.ts`, `lalal.ts`, `elevenlabs.ts`, `translate.ts`, `grading.ts`, `songstats.ts`)
+- Popularity stats UI: `artifacts/web/src/components/TrackCard.tsx` (lazy per-card stats); Trending section: `artifacts/web/src/pages/Landing.tsx`
 - Central error handler: `artifacts/api-server/src/app.ts`
 - Frontend pages: `artifacts/web/src/pages/`; raw-fetch upload calls: `artifacts/web/src/lib/api-extra.ts`
 
@@ -33,6 +34,8 @@ A music-driven language & pronunciation tutor. Search a song, upload its audio, 
 - **Translation is done by an LLM, not Musixmatch.** The Musixmatch plan in use returns the original text for `subtitle_translated` and 0 results for `lyrics.translation.get`, so `translate.ts` batch-translates lyric lines via the OpenAI integration (`gpt-5-mini` with `reasoning_effort: minimal`, falling back to `gpt-4.1-mini`).
 - **External account-limit errors map to 4xx, not 5xx.** The central handler masks all 5xx as a generic message. LALAL ("Premium license required") and ElevenLabs quota/auth failures are classified as `402` so their actionable message reaches the user via `api-extra.ts`.
 - Generated react-query hooks require `queryKey` in the options object (TanStack v5 + Orval 8). Call sites pass the generated `getXQueryKey(...)` helper alongside `enabled`.
+- **Popularity stats come from Songstats, matched by track name + artist.** `GET /tracks/stats` chains Songstats `tracks/search` → `tracks/stats` (this key has no ISRC on Musixmatch tracks). Stats are non-critical enrichment: failures degrade to `{found:false}` (hidden on the card) rather than erroring. `songstats.ts` retries 429/5xx with backoff and caches results in-memory (10 min) — this caches popularity stats only, never Musixmatch lyrics, so the no-cache rule is unaffected.
+- **Trending uses Musixmatch `chart.tracks.get`, not Songstats.** Songstats charts endpoints return 403 on this key, so `GET /tracks/trending` returns the Musixmatch top chart; each card then enriches via the stats endpoint.
 
 ## Gotchas
 

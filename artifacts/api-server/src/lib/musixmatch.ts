@@ -109,6 +109,18 @@ export async function searchTracks(opts: {
   return list.map((entry) => mapTrack(entry.track));
 }
 
+export async function getChartTracks(country = "us"): Promise<MxTrack[]> {
+  const body = await call("chart.tracks.get", {
+    chart_name: "top",
+    page: 1,
+    page_size: 9,
+    country,
+    f_has_lyrics: 1,
+  });
+  const list: any[] = body?.track_list ?? [];
+  return list.map((entry) => mapTrack(entry.track));
+}
+
 export async function getTrack(trackId: number): Promise<MxTrack | null> {
   const body = await call("track.get", { track_id: trackId });
   if (!body?.track) return null;

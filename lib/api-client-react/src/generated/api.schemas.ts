@@ -27,6 +27,41 @@ export interface Track {
   hasTranslation: boolean;
 }
 
+export interface TrackStats {
+  /** Whether a matching track was found on Songstats. */
+  found: boolean;
+  /**
+     * Total Spotify streams.
+     * @nullable
+     */
+  spotifyStreams?: number | null;
+  /**
+     * Spotify popularity index (0-100).
+     * @nullable
+     */
+  spotifyPopularity?: number | null;
+  /**
+     * Current Spotify playlist placements.
+     * @nullable
+     */
+  playlists?: number | null;
+  /**
+     * Total Shazams.
+     * @nullable
+     */
+  shazams?: number | null;
+  /**
+     * Total TikTok video views using the track.
+     * @nullable
+     */
+  tiktokViews?: number | null;
+  /**
+     * Link to the track's Songstats profile.
+     * @nullable
+     */
+  songstatsUrl?: string | null;
+}
+
 export interface LyricWord {
   text: string;
   /** Word start time in seconds. */
@@ -141,6 +176,24 @@ q_artist?: string;
  * Free-text query (artist and title combined).
  */
 q?: string;
+};
+
+export type GetTrendingTracksParams = {
+/**
+ * Target language code used to indicate translation availability.
+ */
+selected_language?: string;
+};
+
+export type GetTrackStatsParams = {
+/**
+ * Track title.
+ */
+trackName: string;
+/**
+ * Artist name.
+ */
+artistName: string;
 };
 
 export type GetTrackSessionParams = {

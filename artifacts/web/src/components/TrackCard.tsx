@@ -1,4 +1,9 @@
-import { Track } from '@workspace/api-client-react';
+import {
+  Track,
+  useGetTrackStats,
+  getGetTrackStatsQueryKey,
+} from '@workspace/api-client-react';
+import { Headphones, ListMusic, Music2 } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Card } from './ui/card';
 
@@ -6,9 +11,60 @@ interface TrackCardProps {
   track: Track;
   onClick?: () => void;
   className?: string;
+  showStats?: boolean;
 }
 
-export function TrackCard({ track, onClick, className = '' }: TrackCardProps) {
+function formatCount(n: number): string {
+  if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(1)}B`;
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return String(n);
+}
+
+function TrackStatsRow({ track }: { track: Track }) {
+  const { data: stats, isLoading } = useGetTrackStats(
+    { trackName: track.trackName, artistName: track.artistName },
+    {
+      query: {
+        queryKey: getGetTrackStatsQueryKey({
+          trackName: track.trackName,
+          artistName: track.artistName,
+        }),
+        staleTime: 1000 * 60 * 60,
+      },
+    },
+  );
+
+  if (isLoading) {
+    return <div className="h-4 mt-2 w-24 rounded bg-muted/60 animate-pulse" />;
+  }
+
+  if (!stats || !stats.found) return null;
+
+  const items: { icon: typeof Headphones; value: number; label: string }[] = [];
+  if (stats.spotifyStreams != null)
+    items.push({ icon: Headphones, value: stats.spotifyStreams, label: 'streams' });
+  if (stats.shazams != null)
+    items.push({ icon: Music2, value: stats.shazams, label: 'Shazams' });
+  if (stats.playlists != null)
+    items.push({ icon: ListMusic, value: stats.playlists, label: 'playlists' });
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[11px] text-muted-foreground">
+      {items.map(({ icon: Icon, value, label }) => (
+        <span key={label} className="inline-flex items-center gap-1" title={`${value.toLocaleString()} ${label}`}>
+          <Icon className="w-3 h-3 text-primary/70" />
+          <span className="font-medium text-foreground/80">{formatCount(value)}</span>
+          <span className="hidden sm:inline">{label}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export function TrackCard({ track, onClick, className = '', showStats = true }: TrackCardProps) {
   return (
     <Card 
       onClick={onClick}
@@ -48,6 +104,8 @@ export function TrackCard({ track, onClick, className = '' }: TrackCardProps) {
               <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary hover:bg-primary/20 border-none">Translation</Badge>
             )}
           </div>
+
+          {showStats && <TrackStatsRow track={track} />}
         </div>
       </div>
     </Card>

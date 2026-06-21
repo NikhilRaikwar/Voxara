@@ -66,6 +66,51 @@ export const SearchTracksResponse = zod.array(SearchTracksResponseItem)
 
 
 /**
+ * Currently popular tracks (Musixmatch top chart) suitable as learning material.
+ * @summary Trending tracks to learn
+ */
+export const getTrendingTracksQuerySelectedLanguageDefault = `en`;
+
+export const GetTrendingTracksQueryParams = zod.object({
+  "selected_language": zod.coerce.string().default(getTrendingTracksQuerySelectedLanguageDefault).describe('Target language code used to indicate translation availability.')
+})
+
+export const GetTrendingTracksResponseItem = zod.object({
+  "trackId": zod.number(),
+  "commontrackId": zod.number(),
+  "trackName": zod.string(),
+  "artistName": zod.string(),
+  "albumName": zod.string().nullish(),
+  "albumCoverUrl": zod.string().nullish(),
+  "hasLyrics": zod.boolean(),
+  "hasRichsync": zod.boolean(),
+  "hasTranslation": zod.boolean()
+})
+export const GetTrendingTracksResponse = zod.array(GetTrendingTracksResponseItem)
+
+
+/**
+ * Resolves real-world streaming, Shazam, playlist and TikTok stats for a track via Songstats, matched by title and artist. Powers the popularity badges on track cards.
+
+ * @summary Cross-platform popularity stats for a track
+ */
+export const GetTrackStatsQueryParams = zod.object({
+  "trackName": zod.coerce.string().describe('Track title.'),
+  "artistName": zod.coerce.string().describe('Artist name.')
+})
+
+export const GetTrackStatsResponse = zod.object({
+  "found": zod.boolean().describe('Whether a matching track was found on Songstats.'),
+  "spotifyStreams": zod.number().nullish().describe('Total Spotify streams.'),
+  "spotifyPopularity": zod.number().nullish().describe('Spotify popularity index (0-100).'),
+  "playlists": zod.number().nullish().describe('Current Spotify playlist placements.'),
+  "shazams": zod.number().nullish().describe('Total Shazams.'),
+  "tiktokViews": zod.number().nullish().describe('Total TikTok video views using the track.'),
+  "songstatsUrl": zod.string().nullish().describe('Link to the track\'s Songstats profile.')
+})
+
+
+/**
  * Fetches the canonical lyrics, the richsync word-level timings and a target-language translation in a single call. Powers Listen mode (minus the isolated audio, which is produced separately via the isolation endpoints).
 
  * @summary Resolve lyrics, word timings and translation for a track
