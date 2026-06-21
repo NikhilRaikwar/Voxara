@@ -1,1 +1,2 @@
 - [api-server dev lifecycle](api-server-dev-lifecycle.md) — api-server `dev` is build+start (esbuild), NOT watch; new routes/code need a workflow restart, and missing deps fail the build, not just typecheck.
+- [express-rate-limit trust proxy](express-rate-limit-trust-proxy.md) — on Replit set `app.set("trust proxy", 1)` or express-rate-limit throws ERR_ERL_UNEXPECTED_X_FORWARDED_FOR ("failed to fetch").

@@ -11,6 +11,11 @@ import { logger } from "./lib/logger";
 
 const app: Express = express();
 
+// The app runs behind Replit's reverse proxy, which sets X-Forwarded-For.
+// Trust exactly one proxy hop so express-rate-limit can read the real client
+// IP without being permissive enough to let clients spoof it.
+app.set("trust proxy", 1);
+
 app.use(
   pinoHttp({
     logger,

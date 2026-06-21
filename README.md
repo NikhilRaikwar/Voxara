@@ -14,6 +14,29 @@ language on the fly.
 
 ---
 
+## 🏆 Musicathon 2026
+
+Voxara was built for **[Musicathon 2026](https://musixmatch.com)** — a 7-day
+online hackathon hosted by **Musixmatch** (June 15–22, 2026) with **Replit** as
+the official sponsor and **ElevenLabs**, **Songstats**, **LALAL.AI**, and **n8n**
+as partners.
+
+- **Theme:** every submission must integrate and actively use the Musixmatch Pro
+  API in a meaningful way. Voxara puts Musixmatch at its core — search, matching,
+  and **word-level synced lyrics** (`richsync`) are what make both Listen and
+  Practice mode possible.
+- **Partner APIs used:** ElevenLabs (vocal isolation + speech-to-text) and
+  Songstats (cross-platform popularity), exceeding the "at least one Musixmatch
+  surface" requirement with three live integrations.
+- **Compliance:** in keeping with the Content Usage Restrictions (no bulk
+  storage / no caching of lyrics), Voxara has **no database** — lyrics are used
+  only for real-time display and never persisted. See *Key design choices* below.
+
+> Judging weighs Originality, Craft, Use of the Musixmatch Pro API, and Impact
+> equally (25% each).
+
+---
+
 ## Features
 
 - **Track search & discovery** — search millions of songs, plus a Featured and
@@ -126,9 +149,37 @@ Songstats enriches each track with cross-platform performance data.
 
 ---
 
+## Built on Replit
+
+Voxara was designed, built, and deployed end-to-end on **[Replit](https://replit.com)** —
+the official sponsor of Musicathon 2026. Replit made it possible to ship a
+multi-service app in a single hackathon week:
+
+- **Monorepo workspace out of the box.** The API server, web frontend, and a
+  component-preview sandbox each run as their own service behind Replit's shared
+  reverse proxy, routed by path (`/api`, `/`) — no manual nginx or local port
+  juggling.
+- **Managed secrets.** All provider keys (`MUSIXMATCH_API_KEY`,
+  `ELEVENLABS_API_KEY`, `SONGSTATS_API_KEY`, `SESSION_SECRET`) are stored as
+  Replit Secrets and injected as environment variables — never committed to the
+  repo.
+- **Built-in OpenAI integration.** Lyric and UI translation use Replit's managed
+  OpenAI-compatible endpoint, so no separate OpenAI account or key was needed.
+- **One-click deploy.** The public demo is published as a Replit Deployment with
+  automatic HTTPS, a `*.replit.app` domain, and health checks.
+- **Live preview while building.** Every change is visible instantly in the
+  preview pane, which is how the 33-language UI and right-to-left layouts were
+  iterated on quickly.
+
+Replit credits are provided to all Musicathon participants — use of Replit is
+optional, but Voxara leans on it for the whole build-and-ship loop.
+
+---
+
 ## Run & operate
 
 ```bash
+pnpm install                                  # install workspace dependencies
 pnpm --filter @workspace/api-server run dev   # API server
 pnpm --filter @workspace/web run dev          # web frontend
 pnpm run typecheck                            # full typecheck
@@ -140,11 +191,54 @@ pnpm --filter @workspace/api-spec run codegen # regenerate API hooks + schemas
 grading). Translation uses the Replit-managed OpenAI integration
 (`AI_INTEGRATIONS_OPENAI_BASE_URL`, `AI_INTEGRATIONS_OPENAI_API_KEY`).
 
+On Replit these are configured as **Secrets**. Running locally, copy them into a
+`.env` file or export them in your shell before starting the servers.
+
+---
+
+## Set up from GitHub
+
+Want to run Voxara outside Replit (or push it to your own repo for the
+submission)? 
+
+**Clone and run an existing copy:**
+
+```bash
+git clone https://github.com/<your-username>/voxara.git
+cd voxara
+pnpm install
+# add the required secrets (see above) to a .env file
+pnpm --filter @workspace/api-server run dev   # terminal 1
+pnpm --filter @workspace/web run dev          # terminal 2
+```
+
+**Push this project to a new GitHub repo:**
+
+```bash
+# 1. create an empty repo on github.com (no README/.gitignore)
+# 2. from the project root:
+git init
+git add .
+git commit -m "Initial commit: Voxara"
+git branch -M main
+git remote add origin https://github.com/<your-username>/voxara.git
+git push -u origin main
+```
+
+> **Never commit secrets.** API keys live in Replit Secrets or a local `.env`
+> (already git-ignored). Double-check `git status` before your first push so no
+> key is staged. The submission repo should be public, but it must not contain
+> any provider keys.
+
+On Replit you can also connect the project to GitHub directly from the **Git**
+pane — no terminal required.
+
 ---
 
 ## Tech stack
 
 - **Monorepo:** pnpm workspaces, Node.js 24, TypeScript 5.9
-- **API:** Express 5, multer (in-memory uploads), Zod validation, Pino logging
+- **API:** Express 5, multer (streamed disk uploads), Zod validation, Pino
+  logging, per-IP rate limiting + CORS origin allowlist
 - **Frontend:** React + Vite, wouter, TanStack Query, Tailwind (cream/terracotta theme)
 - **Codegen:** Orval from the OpenAPI spec

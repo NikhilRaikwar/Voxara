@@ -1,0 +1,116 @@
+Overview
+Musicathon 2026 is a 7-day online hackathon hosted by Musixmatch from June 15 to June 22, 2026. Submissions close on June 22, 2026 at 14:00 CEST / 05:00 PT. Winners will be announced the week of June 30, 2026.
+
+NO PURCHASE IS NECESSARY TO ENTER OR WIN. A PURCHASE DOES NOT INCREASE THE CHANCES OF WINNING.
+
+Eligibility
+The Contest is open to individuals who are at least 18 years of age (or the age of majority in their jurisdiction, whichever is higher) at the time of entry. Void where prohibited by applicable law.
+
+The Contest is not open to residents of, or persons located in, the following jurisdictions: Cuba, Iran, North Korea, Syria, Russia, Belarus, and the Ukrainian regions of Crimea, Donetsk, Luhansk, Kherson, and Zaporizhzhia. The Contest is also not open to residents of China, Brazil, or India due to local prize-promotion regulations requiring filings that the Organizer has not undertaken.
+
+Employees of Musixmatch S.p.A. ("Organizer"), Replit, Inc. ("Sponsor"), their respective affiliates, subsidiaries, advertising and promotion agencies, suppliers and their immediate family and/or household members are not eligible to participate or win.
+
+Teams
+You may compete solo or in a team of up to four (4) people. All members must be registered on the Hub before the submission deadline and must be listed on the team page at the time of submission. A person can belong to one team only. Team changes after submission are not allowed.
+
+Contest Period & Deadline
+The Contest Period runs from June 15, 2026 at 00:00 UTC to June 22, 2026 at 14:00 CEST / 05:00 PT (12:00 UTC). Entries must be submitted on the Hub before the deadline; late submissions cannot be reviewed. The Organizer reserves the right to modify or extend the Contest Period with reasonable notice to registered participants.
+
+Technical Requirements
+Every submission MUST integrate and actively use at least one Musixmatch Pro API surface in a meaningful way. Projects that do not use the Musixmatch Pro API will be disqualified before scoring.
+
+Use of partner APIs is encouraged but not required. Open-source dependencies are welcome; full project clones, forks-with-rebrand and AI one-shot copies of existing products are not. Code must be your team's own work.
+
+Submission Requirements
+A complete submission includes:
+• Title and one-liner
+• Project description (what it does, how it uses the Musixmatch Pro API, what makes it interesting)
+• Cover image
+• Working public demo URL and a demo video (max 5 minutes)
+• Public source repository (GitHub or equivalent)
+• Team members listed on the Hub team page
+
+Only one submission per team is permitted. You can keep editing your project until the deadline; the version live at 14:00 CEST / 05:00 PT on June 22 is the one judged.
+
+Judging Criteria
+Jury scores each submission on Originality (25%), Craft (25%), Use of the Musixmatch Pro API (25%), and Impact (25%). Ties are broken by the head of jury.
+
+Code of Conduct
+Be respectful in all event channels and during live sessions. Harassment, hate speech, doxxing or any form of discrimination is not tolerated and will result in immediate disqualification and removal from the Hub. Report incidents to apisupport@musixmatch.com.
+
+Intellectual Property
+You retain ownership of your project and any intellectual property it contains. By submitting an entry, you grant the Organizer and Sponsor a non-exclusive, worldwide, royalty-free, perpetual, irrevocable license to use, reproduce, publish, display, and distribute your entry — including its name, description, demo, source code, and any associated media — for promotional, advertising, PR, and internal evaluation purposes without further compensation, to the extent permitted by law.
+
+You represent and warrant that: (a) your submission is your team's original work; (b) it does not infringe any third-party rights; (c) you have all necessary permissions, licenses, and consents for the rights granted herein. You agree to indemnify the Organizer and Sponsor from any claim arising from a breach of these representations.
+
+Musixmatch Pro API Usage
+Registered participants receive a Musixmatch Pro API key with Scale-plan access valid for the Contest Period. This key is for Contest use only and must not be shared, resold, or used outside the Musicathon. The Organizer may revoke API access for any participant in violation of this rule or the Musixmatch Pro API Terms of Service.
+
+Content Usage Restrictions
+All content accessed through the Musixmatch Pro API — lyrics, metadata, audio analysis data, and any other proprietary content — is subject to the following restrictions:
+
+No commercial use. Content retrieved via the API may not be used for any commercial purpose. Projects are for demonstration and evaluation only.
+No bulk storage. Do not bulk-download, cache, scrape, or otherwise persist API content beyond what is strictly necessary for real-time display within your project.
+No redistribution. Content may not be redistributed, sublicensed, resold, or made available to third parties outside the Contest submission context.
+Copyright. All music content is protected by copyright; respect applicable IP laws.
+Violation may result in immediate disqualification and revocation of API access.
+
+Prizes
+Total prize pool of $25,000+ in cash and partner perks. Prizes are layered: Musixmatch awards cash and a Pro-plan subscription, and each participating partner adds a tier-specific perk for the winning teams.
+
+🥇 1st Place
+• Musixmatch Pro — $3,000 cash + 1-year Scale plan
+• Replit — 1 year of Replit Pro + $2,500 in credits ($3,700 value)
+• ElevenLabs — 6 months Scale tier ($1,980 value per team member)
+• n8n — 1-year Cloud Pro ($600 value per team member)
+• LALAL.AI — 10,000-minute package + 10×Vox Lite ($800 value)
+• Songstats — API credits ($1,000 value)
+
+🥈 2nd Place
+• Musixmatch Pro — $1,500 cash + 1-year Scale plan
+• Replit — 1 year of Replit Pro ($1,200 value)
+• ElevenLabs — 3 months Pro tier ($297 value per team member)
+• LALAL.AI — 5,000-minute package + 5×Vox Lite ($400 value)
+• Songstats — API credits ($500 value)
+
+🥉 3rd Place
+• Musixmatch Pro — $500 cash + 1-year Grow plan ($1,900 value)
+• Replit — 6 months of Replit Pro ($600 value)
+• ElevenLabs — 3 months Pro tier ($297 value per team member)
+• LALAL.AI — 3,000-minute package + 3×Vox Lite ($250 value)
+• Songstats — API credits ($500 value)
+
+🤝 All Participants
+• ElevenLabs — 1 month Creator tier ($264 value)
+• LALAL.AI — 250 free minutes (Web, VST, and API access)
+
+⭐️ Special Awards
+• LALAL.AI — 10,000-minute package + 10×Vox Lite ($800 value, selected by LALAL.AI)
+
+No cash substitution or prize transfer is permitted, except at the Organizer's sole discretion. All prize-related expenses, including applicable federal, state, or local taxes and any withholding tax (WHT), are the sole responsibility of the winner. Acceptance of a prize constitutes permission for the Organizer to use the winner's name, likeness, and project for promotional purposes without further compensation, except where prohibited by law.
+
+Replit Credits
+Registered participants may claim free Replit credits provided by the official sponsor, Replit, Inc. Use of Replit is optional — you may build and deploy with any tools or platforms you prefer. Replit credits are non-transferable and subject to Replit's standard terms of service.
+
+Winner Selection & Notification
+Winners are selected by the jury after the submission deadline based on the Judging Criteria above. Winners will be notified by email at the address on file. The Organizer is not liable for failure to receive notifications due to spam filters, incorrect contact information, or other communication failures. If a winner cannot be contacted, is found ineligible, or fails to claim the prize within 14 days, the prize may be forfeited and an alternate winner selected at the Organizer's discretion.
+
+Compliance
+Receipt of any prize is conditioned on compliance with all applicable laws and regulations. Any violation of these Official Rules by a winner will result in disqualification and immediate forfeiture of all prizes and winner privileges, at the Organizer's sole discretion.
+
+Terms & Modifications
+The Organizer reserves the right, at its sole discretion, to cancel, suspend, or modify the Contest if a virus, bug, unauthorized human intervention, fraud, or other cause beyond the Organizer's control corrupts or affects the administration, security, fairness, or proper conduct of the Contest. The Organizer also reserves the right to disqualify any individual who tampers with the entry process or violates these Terms, and to seek damages to the fullest extent permitted by law.
+
+Limitation of Liability
+By participating you agree to release and hold harmless Musixmatch S.p.A., Replit, Inc., and their respective subsidiaries, affiliates, advertising and promotion agencies, partners, representatives, agents, successors, assigns, employees, officers, and directors from any liability, loss, injury, damage, or cause of action arising out of participation in the Contest or the receipt, use, or misuse of any prize.
+
+Consumer Rights (EU)
+Nothing in these Official Rules is intended to limit or exclude any mandatory consumer rights that apply under applicable EU or national law. If you are a consumer residing in the European Union or European Economic Area, you may have statutory withdrawal rights or other protections that cannot be waived. To the extent that any provision of these rules conflicts with mandatory consumer protection laws in your jurisdiction, the mandatory legal provisions shall prevail.
+
+Agreement to Rules
+By registering and participating, you agree to be fully bound by these Contest Rules and represent that you meet all eligibility requirements. You agree to accept the decisions of the Organizer as final and binding on all matters related to the Contest, including winner selection and prize awards.
+
+Governing Law
+These Official Rules shall be governed by and construed in accordance with the laws of Italy, without regard to its conflict of law provisions. Any disputes arising from or relating to this Contest shall be submitted to the exclusive jurisdiction of the courts of Bologna, Italy.
+
+Last updated: June 2026. For questions, contact apisupport@musixmatch.com.
