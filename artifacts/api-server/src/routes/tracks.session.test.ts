@@ -16,6 +16,8 @@ vi.mock("../lib/musixmatch", () => ({
 vi.mock("../lib/translate", () => ({
   translateLines: vi.fn(),
   translationAvailable: vi.fn(() => true),
+  isSupportedLanguage: vi.fn(() => true),
+  translateUiStrings: vi.fn(async (texts: string[]) => texts),
 }));
 
 import app from "../app";
