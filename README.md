@@ -200,10 +200,12 @@ in-memory cache.
 
 ### Configuration
 
-Copy `.env.example` to `.env` and supply the credentials available to your team.
-`SONGSTATS_API_KEY` is optional; missing Songstats data only removes popularity
-badges. Translation requires the two `AI_INTEGRATIONS_OPENAI_*` values in the
-current implementation.
+Use `.env.example` as the variable reference. Replit users should add these as
+Secrets; local users should export them in the shell or load them with their own
+environment manager before starting the services (the app does not implicitly
+load `.env`). `SONGSTATS_API_KEY` is optional; missing Songstats data only
+removes popularity badges. Translation requires the two
+`AI_INTEGRATIONS_OPENAI_*` values in the current implementation.
 
 ### Commands
 
