@@ -11,13 +11,17 @@ vi.mock("../lib/musixmatch", () => ({
   getSubtitles: vi.fn(),
   // Unused by the session route but imported by the router module.
   searchTracks: vi.fn(),
+  identifyByLyric: vi.fn(),
+  discoverByMood: vi.fn(),
+  MOODS: ["heartbreak", "hype", "nostalgic", "romantic", "hopeful", "chill"],
   getChartTracks: vi.fn(),
 }));
 vi.mock("../lib/translate", () => ({
   translateLines: vi.fn(),
   translationAvailable: vi.fn(() => true),
+  // Imported elsewhere in the router module graph (translate route).
   isSupportedLanguage: vi.fn(() => true),
-  translateUiStrings: vi.fn(async (texts: string[]) => texts),
+  translateUiStrings: vi.fn(),
 }));
 
 import app from "../app";

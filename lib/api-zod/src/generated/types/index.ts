@@ -7,6 +7,9 @@
  */
 
 export * from './apiError';
+export * from './breakoutTrack';
+export * from './discoverByMoodMood';
+export * from './discoverByMoodParams';
 export * from './getFeaturedTracksParams';
 export * from './getTrackSessionParams';
 export * from './getTrackStatsParams';
@@ -15,6 +18,7 @@ export * from './gradedWord';
 export * from './gradedWordStatus';
 export * from './gradingResult';
 export * from './healthStatus';
+export * from './identifyTrackParams';
 export * from './lyricLine';
 export * from './lyricWord';
 export * from './searchTracksParams';

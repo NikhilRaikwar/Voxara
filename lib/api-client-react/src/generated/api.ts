@@ -17,11 +17,14 @@ import type {
 
 import type {
   ApiError,
+  BreakoutTrack,
+  DiscoverByMoodParams,
   GetFeaturedTracksParams,
   GetTrackSessionParams,
   GetTrackStatsParams,
   GetTrendingTracksParams,
   HealthStatus,
+  IdentifyTrackParams,
   SearchTracksParams,
   Track,
   TrackSession,
@@ -276,6 +279,257 @@ export function useSearchTracks<TData = Awaited<ReturnType<typeof searchTracks>>
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getSearchTracksQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getIdentifyTrackUrl = (params: IdentifyTrackParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/tracks/identify?${stringifiedParams}` : `/api/tracks/identify`
+}
+
+/**
+ * "I remember a lyric" search — resolves candidate tracks from a snippet of remembered lyrics via Musixmatch full-text lyric search.
+
+ * @summary Identify a track from a remembered lyric
+ */
+export const identifyTrack = async (params: IdentifyTrackParams, options?: RequestInit): Promise<Track[]> => {
+
+  return customFetch<Track[]>(getIdentifyTrackUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getIdentifyTrackQueryKey = (params?: IdentifyTrackParams,) => {
+    return [
+    `/api/tracks/identify`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getIdentifyTrackQueryOptions = <TData = Awaited<ReturnType<typeof identifyTrack>>, TError = ErrorType<ApiError>>(params: IdentifyTrackParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof identifyTrack>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getIdentifyTrackQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof identifyTrack>>> = ({ signal }) => identifyTrack(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof identifyTrack>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type IdentifyTrackQueryResult = NonNullable<Awaited<ReturnType<typeof identifyTrack>>>
+export type IdentifyTrackQueryError = ErrorType<ApiError>
+
+
+/**
+ * @summary Identify a track from a remembered lyric
+ */
+
+export function useIdentifyTrack<TData = Awaited<ReturnType<typeof identifyTrack>>, TError = ErrorType<ApiError>>(
+ params: IdentifyTrackParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof identifyTrack>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getIdentifyTrackQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getDiscoverByMoodUrl = (params: DiscoverByMoodParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/tracks/discover?${stringifiedParams}` : `/api/tracks/discover`
+}
+
+/**
+ * Lyric-powered recommendations — each mood maps to evocative lyric keywords searched via Musixmatch full-text lyric search.
+
+ * @summary Discover tracks by mood
+ */
+export const discoverByMood = async (params: DiscoverByMoodParams, options?: RequestInit): Promise<Track[]> => {
+
+  return customFetch<Track[]>(getDiscoverByMoodUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getDiscoverByMoodQueryKey = (params?: DiscoverByMoodParams,) => {
+    return [
+    `/api/tracks/discover`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getDiscoverByMoodQueryOptions = <TData = Awaited<ReturnType<typeof discoverByMood>>, TError = ErrorType<ApiError>>(params: DiscoverByMoodParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof discoverByMood>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDiscoverByMoodQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof discoverByMood>>> = ({ signal }) => discoverByMood(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof discoverByMood>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type DiscoverByMoodQueryResult = NonNullable<Awaited<ReturnType<typeof discoverByMood>>>
+export type DiscoverByMoodQueryError = ErrorType<ApiError>
+
+
+/**
+ * @summary Discover tracks by mood
+ */
+
+export function useDiscoverByMood<TData = Awaited<ReturnType<typeof discoverByMood>>, TError = ErrorType<ApiError>>(
+ params: DiscoverByMoodParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof discoverByMood>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getDiscoverByMoodQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetBreakoutTracksUrl = () => {
+
+
+
+
+  return `/api/tracks/breakout`
+}
+
+/**
+ * Musixmatch chart entries re-ranked by a Songstats growth/velocity signal (live chart presence + fresh editorial-playlist share) rather than raw chart position. Each entry carries its velocity score.
+
+ * @summary Breakout tracks (charts re-ranked by Songstats velocity)
+ */
+export const getBreakoutTracks = async ( options?: RequestInit): Promise<BreakoutTrack[]> => {
+
+  return customFetch<BreakoutTrack[]>(getGetBreakoutTracksUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetBreakoutTracksQueryKey = () => {
+    return [
+    `/api/tracks/breakout`
+    ] as const;
+    }
+
+
+export const getGetBreakoutTracksQueryOptions = <TData = Awaited<ReturnType<typeof getBreakoutTracks>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBreakoutTracks>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBreakoutTracksQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBreakoutTracks>>> = ({ signal }) => getBreakoutTracks({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBreakoutTracks>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetBreakoutTracksQueryResult = NonNullable<Awaited<ReturnType<typeof getBreakoutTracks>>>
+export type GetBreakoutTracksQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Breakout tracks (charts re-ranked by Songstats velocity)
+ */
+
+export function useGetBreakoutTracks<TData = Awaited<ReturnType<typeof getBreakoutTracks>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBreakoutTracks>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetBreakoutTracksQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

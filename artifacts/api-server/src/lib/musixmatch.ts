@@ -33,10 +33,7 @@ async function call(
 
   const res = await fetch(url, { headers: { Accept: "application/json" } });
   if (!res.ok) {
-    throw new MusixmatchError(
-      `Musixmatch ${endpoint} HTTP ${res.status}`,
-      502,
-    );
+    throw new MusixmatchError(`Musixmatch ${endpoint} HTTP ${res.status}`, 502);
   }
   const body = (await res.json()) as any;
   const status = body?.message?.header?.status_code;
@@ -99,7 +96,6 @@ export async function searchTracks(opts: {
   const params: Record<string, string | number | undefined> = {
     page_size: 12,
     page: 1,
-    s_track_rating: "desc",
     f_has_lyrics: 1,
   };
   if (opts.q) params.q = opts.q;
@@ -107,6 +103,50 @@ export async function searchTracks(opts: {
   if (opts.q_artist) params.q_artist = opts.q_artist;
 
   const body = await call("track.search", params);
+  const list: any[] = body?.track_list ?? [];
+  return list.map((entry) => mapTrack(entry.track));
+}
+
+// "I remember a lyric" — resolve candidate tracks from a remembered snippet of
+// lyrics via Musixmatch full-text lyric search (q_lyrics). Returns best matches
+// first so the learner can pick the song they had in mind.
+export async function identifyByLyric(lyric: string): Promise<MxTrack[]> {
+  const params: Record<string, string | number | undefined> = {
+    page_size: 12,
+    page: 1,
+    f_has_lyrics: 1,
+    q_lyrics: lyric,
+  };
+  const body = await call("track.search", params);
+  const list: any[] = body?.track_list ?? [];
+  return list.map((entry) => mapTrack(entry.track));
+}
+
+// "Discover by mood" — a lyric-powered recommendation entry point. Each mood
+// maps to a small set of evocative lyric keywords; we query Musixmatch full-text
+// lyric search (q) so results are driven by what songs actually *say*, not just
+// titles. Unknown moods are rejected by the route before reaching here.
+export const MOOD_QUERIES: Record<string, string> = {
+  heartbreak: "heartbreak goodbye crying alone tears",
+  hype: "party tonight dance turn up energy",
+  nostalgic: "remember yesterday old days memories",
+  romantic: "love kiss forever heart hold you",
+  hopeful: "rise dream tomorrow shining believe",
+  chill: "easy slow breeze calm mellow",
+};
+
+export const MOODS = Object.keys(MOOD_QUERIES);
+
+export async function discoverByMood(mood: string): Promise<MxTrack[]> {
+  const q = MOOD_QUERIES[mood];
+  if (!q) return [];
+  const body = await call("track.search", {
+    page_size: 12,
+    page: 1,
+    f_has_lyrics: 1,
+    s_track_rating: "desc",
+    q,
+  });
   const list: any[] = body?.track_list ?? [];
   return list.map((entry) => mapTrack(entry.track));
 }

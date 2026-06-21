@@ -2,21 +2,30 @@ import { Router, type IRouter } from "express";
 import {
   GetFeaturedTracksResponse,
   SearchTracksResponse,
+  IdentifyTrackResponse,
   GetTrackSessionResponse,
   GetTrendingTracksResponse,
+  GetBreakoutTracksResponse,
   GetTrackStatsResponse,
 } from "@workspace/api-zod";
 import {
   searchTracks as mxSearch,
+  identifyByLyric,
+  discoverByMood,
+  MOODS,
   getTrack,
   getLyrics,
   getRichsync,
   getSubtitles,
   getChartTracks,
 } from "../lib/musixmatch";
-import { getTrackStats } from "../lib/songstats";
+import { getTrackStats, getTrackVelocity } from "../lib/songstats";
 import { translateLines, translationAvailable } from "../lib/translate";
-import { sessionLimiter, tracksLimiter } from "../middlewares/rateLimiter";
+import {
+  sessionLimiter,
+  tracksLimiter,
+  breakoutLimiter,
+} from "../middlewares/rateLimiter";
 
 const router: IRouter = Router();
 
@@ -38,7 +47,9 @@ router.get("/tracks/featured", tracksLimiter, async (req, res, next) => {
         return list[0] ?? null;
       }),
     );
-    const tracks = results.filter((t): t is NonNullable<typeof t> => t !== null);
+    const tracks = results.filter(
+      (t): t is NonNullable<typeof t> => t !== null,
+    );
     res.json(GetFeaturedTracksResponse.parse(tracks));
     return;
   } catch (err) {
@@ -61,6 +72,69 @@ router.get("/tracks/search", tracksLimiter, async (req, res, next) => {
 
     const tracks = await mxSearch({ q, q_track, q_artist });
     res.json(SearchTracksResponse.parse(tracks));
+    return;
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/tracks/identify", tracksLimiter, async (req, res, next) => {
+  try {
+    const lyric =
+      typeof req.query.lyric === "string" ? req.query.lyric.trim() : "";
+    // Require a meaningful snippet: too short matches everything and wastes a
+    // provider call; cap the length to keep the upstream query bounded.
+    if (lyric.length < 3) {
+      res
+        .status(400)
+        .json({
+          error: "Enter at least a few words of the lyric you remember",
+        });
+      return;
+    }
+    const tracks = await identifyByLyric(lyric.slice(0, 200));
+    res.json(IdentifyTrackResponse.parse(tracks));
+    return;
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/tracks/discover", tracksLimiter, async (req, res, next) => {
+  try {
+    const mood = typeof req.query.mood === "string" ? req.query.mood : "";
+    if (!MOODS.includes(mood)) {
+      res.status(400).json({
+        error: `Unknown mood. Choose one of: ${MOODS.join(", ")}`,
+      });
+      return;
+    }
+    const tracks = await discoverByMood(mood);
+    res.json(IdentifyTrackResponse.parse(tracks));
+    return;
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/tracks/breakout", breakoutLimiter, async (req, res, next) => {
+  try {
+    const tracks = await getChartTracks();
+    // Enrich each chart entry with a Songstats velocity score, then re-rank by
+    // momentum rather than raw chart position. Velocity is non-critical
+    // enrichment: a failed lookup degrades to score 0 (sinks to the bottom)
+    // rather than failing the whole panel.
+    const ranked = await Promise.all(
+      tracks.map(async (track) => {
+        const velocity = await getTrackVelocity(
+          track.trackName,
+          track.artistName,
+        );
+        return { ...track, velocityScore: velocity.found ? velocity.score : 0 };
+      }),
+    );
+    ranked.sort((a, b) => b.velocityScore - a.velocityScore);
+    res.json(GetBreakoutTracksResponse.parse(ranked));
     return;
   } catch (err) {
     next(err);
@@ -156,7 +230,8 @@ router.get("/tracks/session", sessionLimiter, async (req, res, next) => {
           const next = idx + 1 < timed.length ? timed[idx + 1].time : null;
           // Guard against non-increasing LRC timestamps so every line keeps a
           // positive duration (else highlighting/model playback stops instantly).
-          const te = next !== null ? Math.max(next, line.time + 0.5) : line.time + 6;
+          const te =
+            next !== null ? Math.max(next, line.time + 0.5) : line.time + 6;
           return {
             index: idx,
             ts: line.time,

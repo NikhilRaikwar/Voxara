@@ -78,7 +78,10 @@ async function searchTrack(
   if (results.length === 0) return null;
 
   const normalize = (s: string) =>
-    s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+    s
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
   const wantArtist = normalize(artistName);
 
   // Prefer a result whose artist list matches; otherwise fall back to the top hit.
@@ -184,6 +187,115 @@ export async function getTrackStats(
     return { ...EMPTY_STATS };
   }
 
-  statsCache.set(cacheKey, { value: result, expires: Date.now() + STATS_TTL_MS });
+  statsCache.set(cacheKey, {
+    value: result,
+    expires: Date.now() + STATS_TTL_MS,
+  });
+  return result;
+}
+
+export interface TrackVelocity {
+  found: boolean;
+  // A breakout/growth score. Higher = more current momentum relative to the
+  // track's accumulated footprint. Used to re-rank chart entries.
+  score: number;
+}
+
+const n = (v: unknown): number => num(v) ?? 0;
+
+// Share of a footprint that is *currently active* (0..1). A high ratio means a
+// track's reach is fresh/growing rather than a long-tail legacy total.
+function freshness(current: unknown, total: unknown): number {
+  const c = n(current);
+  const t = n(total);
+  return t > 0 ? Math.min(c / t, 1) : 0;
+}
+
+const velocityCache = new Map<
+  string,
+  { value: TrackVelocity; expires: number }
+>();
+// In-flight de-duplication: the same track can appear concurrently (parallel
+// breakout requests, or the same hot track across requests before the cache
+// fills). Sharing one in-flight promise per key collapses a cold-cache stampede
+// into a single Songstats round-trip instead of N identical paid lookups.
+const velocityInflight = new Map<string, Promise<TrackVelocity>>();
+
+// Derive a "breakout velocity" signal from Songstats. The key exposes
+// `_current` (active) and `_total` (cumulative) counters plus live chart
+// presence per platform; a track currently sitting on many charts with a high
+// share of *fresh* (editorial) playlist reach is breaking out, regardless of
+// its raw Musixmatch chart rank.
+export async function getTrackVelocity(
+  trackName: string,
+  artistName: string,
+): Promise<TrackVelocity> {
+  const cacheKey = `${trackName.toLowerCase()}|${artistName.toLowerCase()}`;
+  const cached = velocityCache.get(cacheKey);
+  if (cached && cached.expires > Date.now()) return cached.value;
+
+  const pending = velocityInflight.get(cacheKey);
+  if (pending) return pending;
+
+  const work = computeTrackVelocity(trackName, artistName, cacheKey);
+  velocityInflight.set(cacheKey, work);
+  try {
+    return await work;
+  } finally {
+    velocityInflight.delete(cacheKey);
+  }
+}
+
+async function computeTrackVelocity(
+  trackName: string,
+  artistName: string,
+  cacheKey: string,
+): Promise<TrackVelocity> {
+  let result: TrackVelocity;
+  try {
+    const match = await searchTrack(trackName, artistName);
+    if (!match) {
+      result = { found: false, score: 0 };
+    } else {
+      const body = await call("tracks/stats", {
+        songstats_track_id: match.songstatsTrackId,
+      });
+      const stats: any[] = body?.stats ?? [];
+      const bySource: Record<string, any> = {};
+      for (const s of stats) {
+        if (s?.source) bySource[s.source] = s.data ?? {};
+      }
+      const spotify = bySource.spotify ?? {};
+      const shazam = bySource.shazam ?? {};
+      const tiktok = bySource.tiktok ?? {};
+      const apple = bySource.apple_music ?? {};
+
+      const score =
+        n(shazam.charts_current) * 4 + // Shazam = discovery/breakout signal
+        n(spotify.charts_current) * 3 +
+        n(apple.charts_current) * 2 +
+        n(tiktok.charts_current) * 2 +
+        freshness(
+          spotify.playlists_editorial_current,
+          spotify.playlists_editorial_total,
+        ) *
+          25 +
+        freshness(spotify.playlists_current, spotify.playlists_total) * 15 +
+        n(spotify.popularity_current) * 0.2;
+
+      result = { found: true, score: Math.round(score * 100) / 100 };
+    }
+  } catch (err) {
+    logger.warn(
+      { trackName, artistName, err: (err as Error).message },
+      "Songstats velocity lookup failed; treating as no velocity",
+    );
+    return { found: false, score: 0 };
+  }
+
+  velocityCache.set(cacheKey, {
+    value: result,
+    expires: Date.now() + STATS_TTL_MS,
+  });
   return result;
 }

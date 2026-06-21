@@ -89,6 +89,85 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiError"
+  /tracks/identify:
+    get:
+      operationId: identifyTrack
+      tags: [tracks]
+      summary: Identify a track from a remembered lyric
+      description: >
+        "I remember a lyric" search — resolves candidate tracks from a snippet of
+        remembered lyrics via Musixmatch full-text lyric search.
+      parameters:
+        - name: lyric
+          in: query
+          required: true
+          schema:
+            type: string
+          description: A snippet of lyrics the learner remembers.
+      responses:
+        "200":
+          description: Matching tracks (best matches first)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Track"
+        "400":
+          description: Lyric snippet too short or missing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /tracks/discover:
+    get:
+      operationId: discoverByMood
+      tags: [tracks]
+      summary: Discover tracks by mood
+      description: >
+        Lyric-powered recommendations — each mood maps to evocative lyric
+        keywords searched via Musixmatch full-text lyric search.
+      parameters:
+        - name: mood
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [heartbreak, hype, nostalgic, romantic, hopeful, chill]
+          description: The mood to discover tracks for.
+      responses:
+        "200":
+          description: Tracks matching the mood
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Track"
+        "400":
+          description: Unknown or missing mood
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /tracks/breakout:
+    get:
+      operationId: getBreakoutTracks
+      tags: [tracks]
+      summary: Breakout tracks (charts re-ranked by Songstats velocity)
+      description: >
+        Musixmatch chart entries re-ranked by a Songstats growth/velocity signal
+        (live chart presence + fresh editorial-playlist share) rather than raw
+        chart position. Each entry carries its velocity score.
+      responses:
+        "200":
+          description: Chart tracks re-ranked by velocity (highest first)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BreakoutTrack"
   /tracks/trending:
     get:
       operationId: getTrendingTracks
@@ -227,6 +306,42 @@ components:
             "line practice" tier before a session is resolved.
         hasTranslation:
           type: boolean
+    BreakoutTrack:
+      type: object
+      required:
+        - trackId
+        - commontrackId
+        - trackName
+        - artistName
+        - hasLyrics
+        - hasRichsync
+        - hasSubtitles
+        - hasTranslation
+        - velocityScore
+      properties:
+        trackId:
+          type: integer
+        commontrackId:
+          type: integer
+        trackName:
+          type: string
+        artistName:
+          type: string
+        albumName:
+          type: ["string", "null"]
+        albumCoverUrl:
+          type: ["string", "null"]
+        hasLyrics:
+          type: boolean
+        hasRichsync:
+          type: boolean
+        hasSubtitles:
+          type: boolean
+        hasTranslation:
+          type: boolean
+        velocityScore:
+          type: number
+          description: Songstats-derived breakout/velocity score (higher = more momentum).
     TrackStats:
       type: object
       required: [found]

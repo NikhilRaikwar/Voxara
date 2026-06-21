@@ -31,6 +31,23 @@ export interface Track {
   hasTranslation: boolean;
 }
 
+export interface BreakoutTrack {
+  trackId: number;
+  commontrackId: number;
+  trackName: string;
+  artistName: string;
+  /** @nullable */
+  albumName?: string | null;
+  /** @nullable */
+  albumCoverUrl?: string | null;
+  hasLyrics: boolean;
+  hasRichsync: boolean;
+  hasSubtitles: boolean;
+  hasTranslation: boolean;
+  /** Songstats-derived breakout/velocity score (higher = more momentum). */
+  velocityScore: number;
+}
+
 export interface TrackStats {
   /** Whether a matching track was found on Songstats. */
   found: boolean;
@@ -172,6 +189,32 @@ q_artist?: string;
  */
 q?: string;
 };
+
+export type IdentifyTrackParams = {
+/**
+ * A snippet of lyrics the learner remembers.
+ */
+lyric: string;
+};
+
+export type DiscoverByMoodParams = {
+/**
+ * The mood to discover tracks for.
+ */
+mood: DiscoverByMoodMood;
+};
+
+export type DiscoverByMoodMood = typeof DiscoverByMoodMood[keyof typeof DiscoverByMoodMood];
+
+
+export const DiscoverByMoodMood = {
+  heartbreak: 'heartbreak',
+  hype: 'hype',
+  nostalgic: 'nostalgic',
+  romantic: 'romantic',
+  hopeful: 'hopeful',
+  chill: 'chill',
+} as const;
 
 export type GetTrendingTracksParams = {
 /**

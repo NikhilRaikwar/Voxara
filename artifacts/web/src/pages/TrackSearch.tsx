@@ -1,51 +1,104 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { Search as SearchIcon, ArrowLeft } from "lucide-react";
-import { useSearchTracks, getSearchTracksQueryKey } from "@workspace/api-client-react";
+import {
+  useSearchTracks,
+  getSearchTracksQueryKey,
+  useIdentifyTrack,
+  getIdentifyTrackQueryKey,
+} from "@workspace/api-client-react";
 import { useSession } from "../store/SessionContext";
 import { useI18n } from "../i18n/I18nContext";
 import { TrackCard } from "../components/TrackCard";
 
+type SearchMode = "song" | "lyric";
+
 export default function TrackSearch() {
   const [location, setLocation] = useLocation();
   const searchParams = new URLSearchParams(window.location.search);
-  const initialQuery = searchParams.get('q') || '';
-  
+  const initialQuery = searchParams.get("q") || "";
+  const initialMode: SearchMode =
+    searchParams.get("mode") === "lyric" ? "lyric" : "song";
+
+  const [mode, setMode] = useState<SearchMode>(initialMode);
   const [query, setQuery] = useState(initialQuery);
   const [activeQuery, setActiveQuery] = useState(initialQuery);
   const { setCurrentTrack } = useSession();
   const { t } = useI18n();
 
-  const { data: searchResults, isLoading, isError } = useSearchTracks(
+  const songSearch = useSearchTracks(
     { q: activeQuery },
     {
       query: {
-        enabled: !!activeQuery,
+        enabled: mode === "song" && !!activeQuery,
         queryKey: getSearchTracksQueryKey({ q: activeQuery }),
       },
-    }
+    },
   );
+
+  const lyricSearch = useIdentifyTrack(
+    { lyric: activeQuery },
+    {
+      query: {
+        enabled: mode === "lyric" && activeQuery.trim().length >= 3,
+        queryKey: getIdentifyTrackQueryKey({ lyric: activeQuery }),
+      },
+    },
+  );
+
+  const {
+    data: searchResults,
+    isLoading,
+    isError,
+  } = mode === "lyric" ? lyricSearch : songSearch;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       setActiveQuery(query.trim());
       // Update URL without navigation
-      window.history.replaceState(null, '', `/track?q=${encodeURIComponent(query.trim())}`);
+      window.history.replaceState(
+        null,
+        "",
+        `/track?mode=${mode}&q=${encodeURIComponent(query.trim())}`,
+      );
     }
+  };
+
+  const switchMode = (next: SearchMode) => {
+    if (next === mode) return;
+    setMode(next);
+    setActiveQuery("");
+    window.history.replaceState(null, "", `/track?mode=${next}`);
   };
 
   // If no query and user just navigated here without params, they can type.
   return (
     <div className="flex-1 flex flex-col container mx-auto max-w-4xl px-4 py-8">
-      
-      <button 
-        onClick={() => setLocation('/')}
+      <button
+        onClick={() => setLocation("/")}
         className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors self-start w-fit"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span>{t('search.backHome')}</span>
+        <span>{t("search.backHome")}</span>
       </button>
+
+      <div className="inline-flex self-start mb-4 rounded-full bg-muted p-1 text-sm font-medium">
+        <button
+          type="button"
+          onClick={() => switchMode("song")}
+          className={`px-4 py-1.5 rounded-full transition-colors ${mode === "song" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          {t("search.modeSong")}
+        </button>
+        <button
+          type="button"
+          onClick={() => switchMode("lyric")}
+          className={`px-4 py-1.5 rounded-full transition-colors ${mode === "lyric" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          {t("search.modeLyric")}
+        </button>
+      </div>
 
       <form onSubmit={handleSearch} className="w-full relative mb-10">
         <div className="relative group bg-card border border-border rounded-xl hover:border-primary/40 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all">
@@ -57,7 +110,11 @@ export default function TrackSearch() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="block w-full pl-12 pr-4 py-4 bg-transparent border-none rounded-xl text-lg outline-none"
-            placeholder={t('search.placeholder')}
+            placeholder={
+              mode === "lyric"
+                ? t("search.lyricPlaceholder")
+                : t("search.placeholder")
+            }
             autoFocus={!initialQuery}
           />
         </div>
@@ -66,41 +123,48 @@ export default function TrackSearch() {
       <div className="flex-1">
         {isLoading ? (
           <div className="space-y-4">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-24 rounded-xl bg-muted/50 animate-pulse" />
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="h-24 rounded-xl bg-muted/50 animate-pulse"
+              />
             ))}
           </div>
         ) : isError ? (
           <div className="text-center py-16 bg-destructive/10 text-destructive rounded-2xl border border-destructive/20">
-            <p>{t('search.error')}</p>
+            <p>{t("search.error")}</p>
           </div>
         ) : searchResults && searchResults.length > 0 ? (
           <div className="space-y-3">
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">{t('search.results')}</h2>
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">
+              {t("search.results")}
+            </h2>
             {searchResults.map((track, i) => (
-              <div 
+              <div
                 key={track.trackId}
                 className="animate-in slide-in-from-bottom-2 fade-in fill-mode-both"
                 style={{ animationDelay: `${i * 50}ms` }}
               >
-                <TrackCard 
-                  track={track} 
+                <TrackCard
+                  track={track}
                   onClick={() => {
                     setCurrentTrack(track);
                     setLocation(`/listen`);
-                  }} 
+                  }}
                 />
               </div>
             ))}
           </div>
         ) : activeQuery ? (
           <div className="text-center py-24 bg-card rounded-2xl border border-border/50 text-muted-foreground">
-            <p className="text-lg">{t('search.noResults', { query: activeQuery })}</p>
-            <p className="text-sm mt-2">{t('search.tryDifferent')}</p>
+            <p className="text-lg">
+              {t("search.noResults", { query: activeQuery })}
+            </p>
+            <p className="text-sm mt-2">{t("search.tryDifferent")}</p>
           </div>
         ) : (
           <div className="text-center py-24 text-muted-foreground">
-            {t('search.enterTerm')}
+            {t("search.enterTerm")}
           </div>
         )}
       </div>

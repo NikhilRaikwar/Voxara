@@ -68,6 +68,75 @@ export const SearchTracksResponse = zod.array(SearchTracksResponseItem)
 
 
 /**
+ * "I remember a lyric" search — resolves candidate tracks from a snippet of remembered lyrics via Musixmatch full-text lyric search.
+
+ * @summary Identify a track from a remembered lyric
+ */
+export const IdentifyTrackQueryParams = zod.object({
+  "lyric": zod.coerce.string().describe('A snippet of lyrics the learner remembers.')
+})
+
+export const IdentifyTrackResponseItem = zod.object({
+  "trackId": zod.number(),
+  "commontrackId": zod.number(),
+  "trackName": zod.string(),
+  "artistName": zod.string(),
+  "albumName": zod.string().nullish(),
+  "albumCoverUrl": zod.string().nullish(),
+  "hasLyrics": zod.boolean(),
+  "hasRichsync": zod.boolean().describe('Whether word-level timing is available (best experience).'),
+  "hasSubtitles": zod.boolean().describe('Whether line-level subtitle timing is available. Used to predict the \"line practice\" tier before a session is resolved.\n'),
+  "hasTranslation": zod.boolean()
+})
+export const IdentifyTrackResponse = zod.array(IdentifyTrackResponseItem)
+
+
+/**
+ * Lyric-powered recommendations — each mood maps to evocative lyric keywords searched via Musixmatch full-text lyric search.
+
+ * @summary Discover tracks by mood
+ */
+export const DiscoverByMoodQueryParams = zod.object({
+  "mood": zod.enum(['heartbreak', 'hype', 'nostalgic', 'romantic', 'hopeful', 'chill']).describe('The mood to discover tracks for.')
+})
+
+export const DiscoverByMoodResponseItem = zod.object({
+  "trackId": zod.number(),
+  "commontrackId": zod.number(),
+  "trackName": zod.string(),
+  "artistName": zod.string(),
+  "albumName": zod.string().nullish(),
+  "albumCoverUrl": zod.string().nullish(),
+  "hasLyrics": zod.boolean(),
+  "hasRichsync": zod.boolean().describe('Whether word-level timing is available (best experience).'),
+  "hasSubtitles": zod.boolean().describe('Whether line-level subtitle timing is available. Used to predict the \"line practice\" tier before a session is resolved.\n'),
+  "hasTranslation": zod.boolean()
+})
+export const DiscoverByMoodResponse = zod.array(DiscoverByMoodResponseItem)
+
+
+/**
+ * Musixmatch chart entries re-ranked by a Songstats growth/velocity signal (live chart presence + fresh editorial-playlist share) rather than raw chart position. Each entry carries its velocity score.
+
+ * @summary Breakout tracks (charts re-ranked by Songstats velocity)
+ */
+export const GetBreakoutTracksResponseItem = zod.object({
+  "trackId": zod.number(),
+  "commontrackId": zod.number(),
+  "trackName": zod.string(),
+  "artistName": zod.string(),
+  "albumName": zod.string().nullish(),
+  "albumCoverUrl": zod.string().nullish(),
+  "hasLyrics": zod.boolean(),
+  "hasRichsync": zod.boolean(),
+  "hasSubtitles": zod.boolean(),
+  "hasTranslation": zod.boolean(),
+  "velocityScore": zod.number().describe('Songstats-derived breakout\/velocity score (higher = more momentum).')
+})
+export const GetBreakoutTracksResponse = zod.array(GetBreakoutTracksResponseItem)
+
+
+/**
  * Currently popular tracks (Musixmatch top chart) suitable as learning material.
  * @summary Trending tracks to learn
  */

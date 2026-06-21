@@ -37,6 +37,24 @@ export const gradeLimiter = rateLimit({
 });
 
 /**
+ * Limit for the model-pronunciation TTS endpoint.
+ * Each call bills ElevenLabs for speech synthesis. The client caches synthesized
+ * line audio per line, so legitimate use is roughly one call per distinct line a
+ * learner practices. 40 requests / 15 min per IP covers a full multi-line song
+ * (with replays served from cache) while blocking use as an open TTS proxy.
+ */
+export const ttsLimiter = rateLimit({
+  windowMs: windowMs15,
+  max: 40,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    error:
+      "Too many pronunciation requests from this IP. Please wait before trying again.",
+  },
+});
+
+/**
  * Moderate limit for the session endpoint.
  * Each call fans out to Musixmatch + OpenAI translation — expensive.
  * 30 requests / 15 min per IP.
@@ -72,6 +90,26 @@ export const translateLimiter = rateLimit({
 });
 
 /**
+ * Strict limit for the Breakout endpoint.
+ * Unlike the other track-lookup routes, a single cold-cache request fans out to
+ * ~2 Songstats calls per chart entry (search + stats) across the whole chart —
+ * the highest paid-provider multiplier of any GET route. The result only changes
+ * on the order of the Songstats cache TTL (10 min), so legitimate clients need
+ * very few calls. 10 requests / 15 min per IP blocks quota-exhaustion abuse
+ * while comfortably covering normal page loads (served from cache after warm-up).
+ */
+export const breakoutLimiter = rateLimit({
+  windowMs: windowMs15,
+  max: 10,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: {
+    error:
+      "Too many breakout requests from this IP. Please wait before trying again.",
+  },
+});
+
+/**
  * General limit for low-cost track lookup endpoints
  * (search, featured, trending, stats).
  * 60 requests / min per IP — generous for normal browsing, blocks scripted loops.
@@ -82,7 +120,6 @@ export const tracksLimiter = rateLimit({
   standardHeaders: "draft-8",
   legacyHeaders: false,
   message: {
-    error:
-      "Too many requests from this IP. Please wait before trying again.",
+    error: "Too many requests from this IP. Please wait before trying again.",
   },
 });
