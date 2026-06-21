@@ -81,13 +81,16 @@ export async function transcribe(
 }
 
 export interface IsolatedAudio {
-  audio: Buffer;
+  // The raw response body stream from ElevenLabs — pipe it directly to the
+  // client to avoid buffering the entire processed audio in server memory.
+  body: ReadableStream<Uint8Array>;
   contentType: string;
 }
 
 // Extract the vocal stem from a mixed track. ElevenLabs Audio Isolation is
 // synchronous: it returns the processed audio bytes in a single call (no job
-// polling), so the caller can stream the result straight back to the browser.
+// polling). We return the response body as a stream so the caller can pipe it
+// straight to the browser without buffering the full audio in heap memory.
 export async function isolateVocals(
   buffer: Buffer,
   filename: string,
@@ -131,9 +134,12 @@ export async function isolateVocals(
     );
   }
 
-  const arrayBuffer = await res.arrayBuffer();
+  if (!res.body) {
+    throw new ElevenLabsError("ElevenLabs returned an empty response body", 502);
+  }
+
   return {
-    audio: Buffer.from(arrayBuffer),
+    body: res.body,
     contentType: res.headers.get("content-type") || "audio/mpeg",
   };
 }
