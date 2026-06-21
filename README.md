@@ -1,244 +1,255 @@
 # Voxara
 
-**Learn any language through the music you love.**
+### Learn a language through the music you already love.
 
-Voxara turns any song into an interactive pronunciation lesson. Search a track,
-upload its audio, and Voxara isolates the vocals so you can hear every word
-clearly. Read along in **Listen mode** with word-synced highlighting and
-tap-to-translate lyrics, then rehearse in **Practice mode** — record yourself and
-get word-by-word pronunciation grading — before finishing with a session recap.
+Voxara turns a song into an interactive listening and pronunciation lesson. A
+learner searches for a track, uploads legally obtained audio, follows
+Musixmatch-synced lyrics, reads line translations, records a spoken attempt,
+and receives word-by-word feedback before reviewing a session recap.
 
-The entire interface is **fully multilingual**: pick any of 33 languages from the
-header and both the lyric translations *and* the whole app UI switch to that
-language on the fly.
+> Built for Musicathon 2026. Musixmatch Pro is the catalog, lyrics, timing, and
+> chart foundation—not a decorative integration.
 
----
+**[Try the live demo](https://voxara.replit.app/)**
 
-## 🏆 Musicathon 2026
+## Why Voxara
 
-Voxara was built for **[Musicathon 2026](https://musixmatch.com)** — a 7-day
-online hackathon hosted by **Musixmatch** (June 15–22, 2026) with **Replit** as
-the official sponsor and **ElevenLabs**, **Songstats**, **LALAL.AI**, and **n8n**
-as partners.
+Traditional language exercises teach carefully scripted phrases. Songs expose
+learners to rhythm, connected speech, repetition, and culture, but ordinary
+lyrics pages do not help them hear a difficult phrase or verify what they said.
+Voxara closes that loop in one focused flow: **discover → listen → understand →
+practice → improve**.
 
-- **Theme:** every submission must integrate and actively use the Musixmatch Pro
-  API in a meaningful way. Voxara puts Musixmatch at its core — search, matching,
-  and **word-level synced lyrics** (`richsync`) are what make both Listen and
-  Practice mode possible.
-- **Partner APIs used:** ElevenLabs (vocal isolation + speech-to-text) and
-  Songstats (cross-platform popularity), exceeding the "at least one Musixmatch
-  surface" requirement with three live integrations.
-- **Compliance:** in keeping with the Content Usage Restrictions (no bulk
-  storage / no caching of lyrics), Voxara has **no database** — lyrics are used
-  only for real-time display and never persisted. See *Key design choices* below.
+## Musicathon judging fit
 
-> Judging weighs Originality, Craft, Use of the Musixmatch Pro API, and Impact
-> equally (25% each).
+| Criterion | How Voxara addresses it |
+| --- | --- |
+| **Originality — 25%** | Combines karaoke-grade lyric timing with active pronunciation practice instead of stopping at passive lyric display. |
+| **Craft — 25%** | Responsive multilingual interface, right-to-left support, progressive word/line/plain lyric fallbacks, explicit error states, typed API contracts, rate limits, and tests. |
+| **Musixmatch Pro — 25%** | Uses search, track metadata, charts, plain lyrics, line-level subtitles, and word-level richsync in the core learning path. Without Musixmatch, the central experience does not work. |
+| **Impact — 25%** | Makes authentic music usable as repeatable language-learning material across 33 interface and target languages. |
 
----
+## End-to-end use case
 
-## Features
+```mermaid
+flowchart LR
+    Learner(["Language learner"])
 
-- **Track search & discovery** — search millions of songs, plus a Featured and
-  Trending section with real popularity numbers.
-- **Vocal isolation** — upload a song and get a clean, vocals-only stem to study.
-- **Listen mode** — word-level synced highlighting that follows the audio, with
-  per-line translations in your chosen language.
-- **Practice mode** — record a line, get a transcript and a word-by-word accuracy
-  score, and replay the model pronunciation of any word you missed.
-- **Session recap** — lines practiced and average accuracy at a glance.
-- **Full UI internationalization** — the whole interface translates into any of
-  33 languages at runtime, with right-to-left support for Arabic, Hebrew,
-  Persian, and Urdu.
+    subgraph Discover["1 · Discover"]
+      Search["Search by song or artist"]
+      Charts["Browse featured and trending tracks"]
+      Choose["Choose the best sync tier"]
+    end
 
----
+    subgraph Prepare["2 · Prepare"]
+      Upload["Upload owned audio"]
+      Isolate["Isolate the vocal stem"]
+      Session["Resolve lyrics, timing, and translation"]
+    end
+
+    subgraph Learn["3 · Learn"]
+      Listen["Follow karaoke-style lyrics"]
+      Meaning["Read the translated line"]
+      Replay["Replay a line or word"]
+    end
+
+    subgraph Practice["4 · Practice"]
+      Record["Record a spoken attempt"]
+      Transcribe["Transcribe speech"]
+      Grade["Align words and calculate accuracy"]
+      Recap["Review progress and retry"]
+    end
+
+    MXM[("Musixmatch Pro\nsearch · charts · lyrics · richsync")]
+    EL[("ElevenLabs\nisolation · speech-to-text")]
+    SS[("Songstats\noptional popularity context")]
+    LLM[("Translation service\nfallback lyrics · interface copy")]
+
+    Learner --> Search --> Choose --> Upload --> Isolate --> Session
+    Learner --> Charts --> Choose
+    Session --> Listen --> Meaning --> Replay --> Record --> Transcribe --> Grade --> Recap
+    Recap -. "practice again" .-> Replay
+
+    Search --> MXM
+    Charts --> MXM
+    Session --> MXM
+    Search -. "enrich cards" .-> SS
+    Isolate --> EL
+    Transcribe --> EL
+    Session -. "when provider translation is unavailable" .-> LLM
+
+    classDef person fill:#6D28D9,stroke:#4C1D95,color:#FFFFFF,stroke-width:2px;
+    classDef discover fill:#DBEAFE,stroke:#2563EB,color:#172554;
+    classDef prepare fill:#FFEDD5,stroke:#EA580C,color:#431407;
+    classDef learn fill:#DCFCE7,stroke:#16A34A,color:#052E16;
+    classDef practice fill:#FCE7F3,stroke:#DB2777,color:#500724;
+    classDef provider fill:#F3E8FF,stroke:#9333EA,color:#3B0764,stroke-width:2px;
+    class Learner person;
+    class Search,Charts,Choose discover;
+    class Upload,Isolate,Session prepare;
+    class Listen,Meaning,Replay learn;
+    class Record,Transcribe,Grade,Recap practice;
+    class MXM,EL,SS,LLM provider;
+```
+
+## Core experience
+
+- **Search and discovery:** search Musixmatch by title, artist, or free text;
+  featured and chart-backed tracks make the demo path immediate.
+- **Progressive lyric sync:** use word-level richsync when available, fall back
+  to line-level subtitles, and retain a read-only plain-lyrics experience when
+  timing data is unavailable.
+- **Focused listening:** isolate vocals, highlight the active lyric word, show
+  the translated line, and jump directly from a line into practice.
+- **Pronunciation practice:** transcribe a learner recording, align it with the
+  expected lyric using tolerant edit-distance matching, and mark matched,
+  substituted, and missing words.
+- **Session recap:** summarize unique lines attempted and average recognition
+  accuracy, then let the learner continue or choose another song.
+- **International interface:** switch the interface and target translation
+  across 33 languages, including right-to-left layouts.
+
+## Musixmatch Pro integration
+
+The server owns the API key and calls Musixmatch directly. Provider keys never
+ship in the browser bundle.
+
+| Musixmatch surface | Product role |
+| --- | --- |
+| `track.search` | Finds canonical tracks and reports lyric/sync availability. |
+| `track.get` | Resolves canonical metadata for a selected learning session. |
+| `chart.tracks.get` | Powers the trending discovery shelf. |
+| `track.richsync.get` | Supplies line and word timestamps for highlighting, replay, and practice. |
+| `track.subtitle.get` | Provides a timed line-level fallback when richsync is unavailable. |
+| `track.lyrics.get` | Provides a plain-text fallback and mandatory copyright attribution. |
+
+This tiered approach makes Musixmatch data operationally meaningful: it decides
+what the learner sees, what can be replayed, and whether pronunciation practice
+is available for a track.
 
 ## Architecture
 
 ```mermaid
-flowchart TD
-    subgraph Browser["Browser — React + Vite SPA"]
-        UI["Pages: Landing · Search · Listen · Practice · Recap"]
-        I18N["I18n layer<br/>(runtime UI translation + cache)"]
-        Q["TanStack Query<br/>(generated hooks)"]
-        UI --> I18N
-        UI --> Q
+flowchart TB
+    subgraph Client["React + Vite client"]
+      Pages["Landing · Search · Listen · Practice · Recap"]
+      State["Ephemeral session state"]
+      Query["Generated TanStack Query client"]
+      Pages --> State
+      Pages --> Query
     end
 
-    subgraph API["API Server — Express"]
-        R1["/tracks · /tracks/session<br/>/tracks/trending · /tracks/stats"]
-        R2["/isolation"]
-        R3["/grade"]
-        R4["/translate"]
+    subgraph Server["Express API"]
+      Tracks["Track and session routes"]
+      Audio["Isolation and grading routes"]
+      Translate["Translation route"]
+      Guards["CORS · rate limits · validation · structured logs"]
+      Guards --> Tracks
+      Guards --> Audio
+      Guards --> Translate
     end
 
-    subgraph Providers["External Providers"]
-        MXM["Musixmatch<br/>search · synced lyrics · charts"]
-        EL["ElevenLabs<br/>audio isolation · speech-to-text"]
-        SS["Songstats<br/>streams · Shazams · playlists"]
-        AI["OpenAI-compatible LLM<br/>(lyric + UI translation)"]
+    subgraph Providers["External services"]
+      Musixmatch["Musixmatch Pro"]
+      ElevenLabs["ElevenLabs"]
+      Songstats["Songstats"]
+      OpenAI["OpenAI-compatible translation"]
     end
 
-    Q -->|"search / session / trending / stats"| R1
-    Q -->|"upload audio"| R2
-    Q -->|"upload recording"| R3
-    I18N -->|"translate UI bundle"| R4
+    Query --> Tracks
+    Query --> Audio
+    Query --> Translate
+    Tracks --> Musixmatch
+    Tracks -. "optional enrichment" .-> Songstats
+    Tracks -. "translation fallback" .-> OpenAI
+    Audio --> ElevenLabs
+    Translate --> OpenAI
 
-    R1 --> MXM
-    R1 --> SS
-    R1 --> AI
-    R2 --> EL
-    R3 --> EL
-    R3 --> AI
-    R4 --> AI
-
-    classDef browser fill:#fdf3ec,stroke:#d97b5a,color:#7a3b22;
-    classDef api fill:#f3ece4,stroke:#b08968,color:#5c4433;
-    classDef prov fill:#eef2f0,stroke:#6b8f7d,color:#33503f;
-    class UI,I18N,Q browser;
-    class R1,R2,R3,R4 api;
-    class MXM,EL,SS,AI prov;
+    classDef client fill:#E0F2FE,stroke:#0284C7,color:#082F49;
+    classDef server fill:#FEF3C7,stroke:#D97706,color:#451A03;
+    classDef provider fill:#F3E8FF,stroke:#9333EA,color:#3B0764;
+    class Pages,State,Query client;
+    class Tracks,Audio,Translate,Guards server;
+    class Musixmatch,ElevenLabs,Songstats,OpenAI provider;
 ```
 
-**Key design choices**
+The API is contract-first: the OpenAPI document generates Zod schemas and React
+Query hooks. Lyrics and recordings are not written to a database. Browser
+session state is ephemeral; only non-lyric Songstats results receive a short
+in-memory cache.
 
-- **No database.** Musixmatch's terms prohibit caching lyrics, so all session
-  state lives in the browser. Only non-lyric popularity stats are cached
-  in-memory on the server.
-- **Contract-first API.** The OpenAPI spec generates the React Query hooks and
-  Zod schemas. File-upload and array-body endpoints (`/isolation`, `/grade`,
-  `/translate`) are called via raw `fetch` to avoid codegen friction.
-- **Runtime UI translation.** Rather than shipping 33 static translation files,
-  the UI string bundle is translated once per language by the LLM and cached in
-  `localStorage`, falling back to English if translation is unavailable.
+## Technology
 
----
+- **Frontend:** React, Vite, TypeScript, Tailwind CSS, TanStack Query, wouter
+- **Backend:** Express 5, Zod, multer, Pino, in-memory rate limiting
+- **Contracts:** OpenAPI, Orval-generated client hooks and schemas
+- **Workspace:** pnpm monorepo, Node.js 24
+- **Providers:** Musixmatch Pro, ElevenLabs, Songstats, OpenAI-compatible API
+- **Build environment:** Replit
 
-## How the APIs are used
+## Run locally
 
-### Musixmatch — the music & lyrics foundation
+### Prerequisites
 
-Musixmatch is the catalog and lyrics backbone of the app.
+- Node.js 24
+- pnpm 11
+- Linux or Replit for the production build (the checked-in native dependency
+  overrides intentionally target the Replit/Linux runtime)
+- A Musicathon-issued Musixmatch Pro API key
+- ElevenLabs credentials for vocal isolation and speech transcription
 
-- **Search & match** (`track.search`) powers the search box and surfaces whether
-  a track has word-level sync, line-level sync, or read-only lyrics.
-- **Word-level synced lyrics** (`track.richsync.get`) drive Listen mode's
-  karaoke-style highlighting and Practice mode's per-line timing.
-- **Trending** (`chart.tracks.get`) populates the "Trending Now" chart on the
-  landing page.
+### Configuration
 
-### ElevenLabs — audio in, audio understood
+Copy `.env.example` to `.env` and supply the credentials available to your team.
+`SONGSTATS_API_KEY` is optional; missing Songstats data only removes popularity
+badges. Translation requires the two `AI_INTEGRATIONS_OPENAI_*` values in the
+current implementation.
 
-ElevenLabs handles everything audio.
-
-- **Audio Isolation** (`/v1/audio-isolation`) strips the instrumental from an
-  uploaded song so learners hear the vocals clearly. It runs synchronously and
-  streams the isolated vocal back in a single call.
-- **Speech-to-Text** (`scribe_v1`) transcribes the learner's recorded attempt in
-  Practice mode; the transcript is compared against the expected line to compute
-  a word-by-word pronunciation score.
-
-### Songstats — real popularity signals
-
-Songstats enriches each track with cross-platform performance data.
-
-- **Track search + stats** (`tracks/search` → `tracks/stats`) attach real
-  **Spotify streams**, **Shazam counts**, and **playlist placements** to each
-  card. Stats are non-critical enrichment: if a match isn't found, the card
-  simply renders without them.
-
----
-
-## Built on Replit
-
-Voxara was designed, built, and deployed end-to-end on **[Replit](https://replit.com)** —
-the official sponsor of Musicathon 2026. Replit made it possible to ship a
-multi-service app in a single hackathon week:
-
-- **Monorepo workspace out of the box.** The API server, web frontend, and a
-  component-preview sandbox each run as their own service behind Replit's shared
-  reverse proxy, routed by path (`/api`, `/`) — no manual nginx or local port
-  juggling.
-- **Managed secrets.** All provider keys (`MUSIXMATCH_API_KEY`,
-  `ELEVENLABS_API_KEY`, `SONGSTATS_API_KEY`, `SESSION_SECRET`) are stored as
-  Replit Secrets and injected as environment variables — never committed to the
-  repo.
-- **Built-in OpenAI integration.** Lyric and UI translation use Replit's managed
-  OpenAI-compatible endpoint, so no separate OpenAI account or key was needed.
-- **One-click deploy.** The public demo is published as a Replit Deployment with
-  automatic HTTPS, a `*.replit.app` domain, and health checks.
-- **Live preview while building.** Every change is visible instantly in the
-  preview pane, which is how the 33-language UI and right-to-left layouts were
-  iterated on quickly.
-
-Replit credits are provided to all Musicathon participants — use of Replit is
-optional, but Voxara leans on it for the whole build-and-ship loop.
-
----
-
-## Run & operate
+### Commands
 
 ```bash
-pnpm install                                  # install workspace dependencies
-pnpm --filter @workspace/api-server run dev   # API server
-pnpm --filter @workspace/web run dev          # web frontend
-pnpm run typecheck                            # full typecheck
-pnpm --filter @workspace/api-spec run codegen # regenerate API hooks + schemas
-```
-
-**Required secrets:** `MUSIXMATCH_API_KEY`, `ELEVENLABS_API_KEY`,
-`SONGSTATS_API_KEY` (ElevenLabs powers both vocal isolation and pronunciation
-grading). Translation uses the Replit-managed OpenAI integration
-(`AI_INTEGRATIONS_OPENAI_BASE_URL`, `AI_INTEGRATIONS_OPENAI_API_KEY`).
-
-On Replit these are configured as **Secrets**. Running locally, copy them into a
-`.env` file or export them in your shell before starting the servers.
-
----
-
-## Set up from GitHub
-
-Want to run Voxara outside Replit (or push it to your own repo for the
-submission)? 
-
-**Clone and run an existing copy:**
-
-```bash
-git clone https://github.com/<your-username>/voxara.git
-cd voxara
 pnpm install
-# add the required secrets (see above) to a .env file
-pnpm --filter @workspace/api-server run dev   # terminal 1
-pnpm --filter @workspace/web run dev          # terminal 2
+pnpm --filter @workspace/api-server run dev
+pnpm --filter @workspace/web run dev
 ```
 
-**Push this project to a new GitHub repo:**
+Run the two development services in separate terminals. Useful verification
+commands:
 
 ```bash
-# 1. create an empty repo on github.com (no README/.gitignore)
-# 2. from the project root:
-git init
-git add .
-git commit -m "Initial commit: Voxara"
-git branch -M main
-git remote add origin https://github.com/<your-username>/voxara.git
-git push -u origin main
+pnpm run typecheck
+pnpm --filter @workspace/api-server run test
+pnpm run build
 ```
 
-> **Never commit secrets.** API keys live in Replit Secrets or a local `.env`
-> (already git-ignored). Double-check `git status` before your first push so no
-> key is staged. The submission repo should be public, but it must not contain
-> any provider keys.
+## Privacy, content, and contest compliance
 
-On Replit you can also connect the project to GitHub directly from the **Git**
-pane — no terminal required.
+- Musixmatch lyrics and metadata are fetched for real-time display and are not
+  bulk downloaded, redistributed, or persisted by Voxara.
+- Uploaded audio and learner recordings are processed for the active request;
+  the application does not intentionally retain them as product data.
+- Musixmatch and partner credentials remain server-side environment variables.
+- Lyrics retain the copyright notice returned by Musixmatch.
+- The Musicathon build is a non-commercial demonstration.
 
----
+The MIT license covers the original Voxara source code only. It does not grant
+rights to Musixmatch content, song recordings, provider APIs, trademarks, or
+other third-party material.
 
-## Tech stack
+## Repository map
 
-- **Monorepo:** pnpm workspaces, Node.js 24, TypeScript 5.9
-- **API:** Express 5, multer (streamed disk uploads), Zod validation, Pino
-  logging, per-IP rate limiting + CORS origin allowlist
-- **Frontend:** React + Vite, wouter, TanStack Query, Tailwind (cream/terracotta theme)
-- **Codegen:** Orval from the OpenAPI spec
+```text
+artifacts/web/          React application
+artifacts/api-server/   Express API and provider integrations
+lib/api-spec/           OpenAPI source contract
+lib/api-zod/            Generated runtime schemas
+lib/api-client-react/   Generated React API client
+docs/                   Submission and compliance material
+```
+
+Submission maintainers can use the
+[copy-ready Musicathon kit](docs/MUSICATHON_SUBMISSION.md).
+
+## Author and license
+
+Created by **Nikhil Raikwar**. Released under the [MIT License](LICENSE).
