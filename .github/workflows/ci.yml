@@ -31,7 +31,9 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # CI only typechecks and runs Vitest; native build lifecycle scripts are
+        # unnecessary here and are intentionally blocked by workspace policy.
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Typecheck workspace
         run: pnpm run typecheck
