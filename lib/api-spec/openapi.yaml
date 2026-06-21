@@ -3,13 +3,17 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: LinguaSync API — music-driven language & pronunciation tutor
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: tracks
+    description: Track search and lyric/translation/timing resolution
+  - name: isolation
+    description: Vocal isolation jobs
 paths:
   /healthz:
     get:
@@ -24,6 +28,131 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /tracks/featured:
+    get:
+      operationId: getFeaturedTracks
+      tags: [tracks]
+      summary: Featured demo-ready tracks
+      description: A small curated shortlist of tracks confirmed to have full lyrics, richsync and translation coverage.
+      parameters:
+        - name: selected_language
+          in: query
+          required: false
+          schema:
+            type: string
+            default: en
+          description: Target language code used to indicate translation availability.
+      responses:
+        "200":
+          description: Featured tracks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Track"
+  /tracks/search:
+    get:
+      operationId: searchTracks
+      tags: [tracks]
+      summary: Search for a track
+      description: Resolve tracks by title and/or artist via Musixmatch.
+      parameters:
+        - name: q_track
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Track title.
+        - name: q_artist
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Artist name.
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Free-text query (artist and title combined).
+      responses:
+        "200":
+          description: Matching tracks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Track"
+        "400":
+          description: Missing query
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /tracks/session:
+    get:
+      operationId: getTrackSession
+      tags: [tracks]
+      summary: Resolve lyrics, word timings and translation for a track
+      description: >
+        Fetches the canonical lyrics, the richsync word-level timings and a target-language
+        translation in a single call. Powers Listen mode (minus the isolated audio, which is
+        produced separately via the isolation endpoints).
+      parameters:
+        - name: trackId
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Musixmatch track_id.
+        - name: selected_language
+          in: query
+          required: false
+          schema:
+            type: string
+            default: en
+          description: Target language code for translation (e.g. "en").
+      responses:
+        "200":
+          description: Track session payload
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackSession"
+        "404":
+          description: Track not found or missing required assets
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /isolation/status:
+    get:
+      operationId: getIsolationStatus
+      tags: [isolation]
+      summary: Poll a vocal isolation job
+      description: Check the status of a LALAL.AI split job and retrieve the isolated vocal URL when ready.
+      parameters:
+        - name: taskId
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The isolation task id returned from the isolation upload endpoint.
+      responses:
+        "200":
+          description: Isolation job status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IsolationJob"
+        "404":
+          description: Unknown task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +162,148 @@ components:
           type: string
       required:
         - status
-
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+    Track:
+      type: object
+      required:
+        - trackId
+        - commontrackId
+        - trackName
+        - artistName
+        - hasLyrics
+        - hasRichsync
+        - hasTranslation
+      properties:
+        trackId:
+          type: integer
+        commontrackId:
+          type: integer
+        trackName:
+          type: string
+        artistName:
+          type: string
+        albumName:
+          type: ["string", "null"]
+        albumCoverUrl:
+          type: ["string", "null"]
+        hasLyrics:
+          type: boolean
+        hasRichsync:
+          type: boolean
+        hasTranslation:
+          type: boolean
+    LyricWord:
+      type: object
+      required: [text, start, end]
+      properties:
+        text:
+          type: string
+        start:
+          type: number
+          description: Word start time in seconds.
+        end:
+          type: number
+          description: Word end time in seconds.
+    LyricLine:
+      type: object
+      required: [index, ts, te, text, words]
+      properties:
+        index:
+          type: integer
+        ts:
+          type: number
+          description: Line start time in seconds.
+        te:
+          type: number
+          description: Line end time in seconds.
+        text:
+          type: string
+          description: The full original line text.
+        words:
+          type: array
+          items:
+            $ref: "#/components/schemas/LyricWord"
+        translation:
+          type: ["string", "null"]
+          description: Translated text for this line, if available.
+    TrackSession:
+      type: object
+      required:
+        - track
+        - lines
+        - copyright
+        - hasRichsync
+        - hasTranslation
+        - targetLanguage
+      properties:
+        track:
+          $ref: "#/components/schemas/Track"
+        lines:
+          type: array
+          items:
+            $ref: "#/components/schemas/LyricLine"
+        plainLyrics:
+          type: ["string", "null"]
+          description: Plain-text lyrics fallback when richsync is unavailable.
+        copyright:
+          type: string
+          description: Mandatory Musixmatch copyright notice to render alongside lyrics.
+        hasRichsync:
+          type: boolean
+        hasTranslation:
+          type: boolean
+        targetLanguage:
+          type: string
+    IsolationJob:
+      type: object
+      required: [taskId, status]
+      properties:
+        taskId:
+          type: string
+        status:
+          type: string
+          enum: [processing, success, error]
+        progress:
+          type: ["number", "null"]
+          description: Progress percentage 0-100 when available.
+        vocalUrl:
+          type: ["string", "null"]
+          description: URL of the isolated vocal stem when status is success.
+        error:
+          type: ["string", "null"]
+    GradedWord:
+      type: object
+      required: [expected, status]
+      properties:
+        expected:
+          type: string
+        status:
+          type: string
+          enum: [match, substituted, missing]
+        actual:
+          type: ["string", "null"]
+          description: What the learner actually said for this position, if any.
+    GradingResult:
+      type: object
+      required: [scorePercent, transcript, words, extraWords]
+      properties:
+        scorePercent:
+          type: integer
+          description: Matched words / total expected words, as a percentage.
+        transcript:
+          type: string
+          description: Full transcription of the learner's attempt.
+        words:
+          type: array
+          items:
+            $ref: "#/components/schemas/GradedWord"
+        extraWords:
+          type: array
+          items:
+            type: string
+          description: Words the learner added that were not expected.

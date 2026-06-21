@@ -6,6 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
-}
+export type GetFeaturedTracksParams = {
+/**
+ * Target language code used to indicate translation availability.
+ */
+selected_language?: string;
+};

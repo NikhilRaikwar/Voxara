@@ -6,6 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
-}
+export type GetIsolationStatusParams = {
+/**
+ * The isolation task id returned from the isolation upload endpoint.
+ */
+taskId: string;
+};

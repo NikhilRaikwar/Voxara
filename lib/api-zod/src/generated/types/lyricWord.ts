@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface HealthStatus {
-  status: string;
+export interface LyricWord {
+  text: string;
+  /** Word start time in seconds. */
+  start: number;
+  /** Word end time in seconds. */
+  end: number;
 }
