@@ -21,7 +21,7 @@ interface SessionContextType {
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const [targetLanguage, setTargetLanguage] = useState<string>('es');
+  const [targetLanguage, setTargetLanguage] = useState<string>('en');
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null);
   const [vocalUrl, setVocalUrl] = useState<string | null>(null);
   const [attempts, setAttempts] = useState<Attempt[]>([]);

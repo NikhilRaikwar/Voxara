@@ -6,12 +6,14 @@ import {
   useGetTrendingTracks,
 } from "@workspace/api-client-react";
 import { useSession } from "../store/SessionContext";
+import { useI18n } from "../i18n/I18nContext";
 import { TrackCard } from "../components/TrackCard";
 
 export default function Landing() {
   const [query, setQuery] = useState("");
   const [, setLocation] = useLocation();
   const { targetLanguage, setCurrentTrack } = useSession();
+  const { t } = useI18n();
 
   const { data: featuredTracks, isLoading } = useGetFeaturedTracks({ selected_language: targetLanguage });
   const { data: trendingTracks, isLoading: trendingLoading } = useGetTrendingTracks({ selected_language: targetLanguage });
@@ -28,15 +30,15 @@ export default function Landing() {
       
       <div className="text-center max-w-2xl mx-auto space-y-6 mb-16 animate-in slide-in-from-bottom-4 duration-700 fade-in">
         <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-foreground">
-          Master any language through the <span className="text-primary relative inline-block">
-            music you love
+          {t('landing.titlePre')} <span className="text-primary relative inline-block">
+            {t('landing.titleHighlight')}
             <svg className="absolute w-full h-3 -bottom-1 left-0 text-primary/30" viewBox="0 0 100 20" preserveAspectRatio="none">
               <path d="M0 10 Q 50 20 100 10" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
             </svg>
           </span>
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground font-serif italic max-w-xl mx-auto">
-          Voxara turns your favorite tracks into interactive pronunciation lessons. Sing along, get graded, and perfect your accent.
+          {t('landing.subtitle')}
         </p>
       </div>
 
@@ -50,13 +52,13 @@ export default function Landing() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="block w-full pl-12 pr-4 py-5 bg-transparent border-none rounded-2xl text-lg outline-none placeholder:text-muted-foreground/60"
-            placeholder="Search for a song or artist..."
+            placeholder={t('landing.searchPlaceholder')}
           />
           <button 
             type="submit"
             className="absolute inset-y-2 right-2 px-6 bg-primary text-primary-foreground font-medium rounded-xl hover:bg-primary/90 active:scale-95 transition-all"
           >
-            Find Track
+            {t('landing.findTrack')}
           </button>
         </div>
       </form>
@@ -64,7 +66,7 @@ export default function Landing() {
       <div className="w-full animate-in slide-in-from-bottom-12 duration-700 delay-300 fade-in fill-mode-both">
         <div className="flex items-center gap-2 mb-6">
           <Music className="w-5 h-5 text-primary" />
-          <h2 className="text-xl font-semibold">Featured Demo Tracks</h2>
+          <h2 className="text-xl font-semibold">{t('landing.featured')}</h2>
         </div>
         
         {isLoading ? (
@@ -93,7 +95,7 @@ export default function Landing() {
           </div>
         ) : (
           <div className="text-center py-12 bg-card rounded-2xl border border-border/50 text-muted-foreground">
-            No featured tracks found for this language.
+            {t('landing.noFeatured')}
           </div>
         )}
       </div>
@@ -101,10 +103,10 @@ export default function Landing() {
       <div className="w-full mt-16 animate-in slide-in-from-bottom-12 duration-700 delay-500 fade-in fill-mode-both">
         <div className="flex items-center gap-2 mb-2">
           <TrendingUp className="w-5 h-5 text-primary" />
-          <h2 className="text-xl font-semibold">Trending Now</h2>
+          <h2 className="text-xl font-semibold">{t('landing.trending')}</h2>
         </div>
         <p className="text-sm text-muted-foreground mb-6">
-          Today's most popular tracks — with real streaming, Shazam and playlist numbers.
+          {t('landing.trendingSub')}
         </p>
 
         {trendingLoading ? (
@@ -133,7 +135,7 @@ export default function Landing() {
           </div>
         ) : (
           <div className="text-center py-12 bg-card rounded-2xl border border-border/50 text-muted-foreground">
-            Trending tracks are unavailable right now.
+            {t('landing.trendingUnavailable')}
           </div>
         )}
       </div>

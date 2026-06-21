@@ -3,6 +3,7 @@ import healthRouter from "./health";
 import tracksRouter from "./tracks";
 import isolationRouter from "./isolation";
 import gradeRouter from "./grade";
+import translateRouter from "./translate";
 
 const router: IRouter = Router();
 
@@ -10,5 +11,6 @@ router.use(healthRouter);
 router.use(tracksRouter);
 router.use(isolationRouter);
 router.use(gradeRouter);
+router.use(translateRouter);
 
 export default router;

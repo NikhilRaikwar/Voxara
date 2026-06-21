@@ -6,6 +6,8 @@ import {
 import { Headphones, ListMusic, Music2 } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Card } from './ui/card';
+import { useI18n } from '../i18n/I18nContext';
+import type { StringKey } from '../i18n/strings';
 
 interface TrackCardProps {
   track: Track;
@@ -22,6 +24,7 @@ function formatCount(n: number): string {
 }
 
 function TrackStatsRow({ track }: { track: Track }) {
+  const { t } = useI18n();
   const { data: stats, isLoading } = useGetTrackStats(
     { trackName: track.trackName, artistName: track.artistName },
     {
@@ -41,30 +44,34 @@ function TrackStatsRow({ track }: { track: Track }) {
 
   if (!stats || !stats.found) return null;
 
-  const items: { icon: typeof Headphones; value: number; label: string }[] = [];
+  const items: { icon: typeof Headphones; value: number; labelKey: StringKey }[] = [];
   if (stats.spotifyStreams != null)
-    items.push({ icon: Headphones, value: stats.spotifyStreams, label: 'streams' });
+    items.push({ icon: Headphones, value: stats.spotifyStreams, labelKey: 'stats.streams' });
   if (stats.shazams != null)
-    items.push({ icon: Music2, value: stats.shazams, label: 'Shazams' });
+    items.push({ icon: Music2, value: stats.shazams, labelKey: 'stats.shazams' });
   if (stats.playlists != null)
-    items.push({ icon: ListMusic, value: stats.playlists, label: 'playlists' });
+    items.push({ icon: ListMusic, value: stats.playlists, labelKey: 'stats.playlists' });
 
   if (items.length === 0) return null;
 
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 text-[11px] text-muted-foreground">
-      {items.map(({ icon: Icon, value, label }) => (
-        <span key={label} className="inline-flex items-center gap-1" title={`${value.toLocaleString()} ${label}`}>
-          <Icon className="w-3 h-3 text-primary/70" />
-          <span className="font-medium text-foreground/80">{formatCount(value)}</span>
-          <span className="hidden sm:inline">{label}</span>
-        </span>
-      ))}
+      {items.map(({ icon: Icon, value, labelKey }) => {
+        const label = t(labelKey);
+        return (
+          <span key={labelKey} className="inline-flex items-center gap-1" title={`${value.toLocaleString()} ${label}`}>
+            <Icon className="w-3 h-3 text-primary/70" />
+            <span className="font-medium text-foreground/80">{formatCount(value)}</span>
+            <span className="hidden sm:inline">{label}</span>
+          </span>
+        );
+      })}
     </div>
   );
 }
 
 export function TrackCard({ track, onClick, className = '', showStats = true }: TrackCardProps) {
+  const { t } = useI18n();
   return (
     <Card 
       onClick={onClick}
@@ -95,15 +102,15 @@ export function TrackCard({ track, onClick, className = '', showStats = true }: 
           
           <div className="flex flex-wrap gap-1.5 mt-2">
             {track.hasRichsync ? (
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary hover:bg-primary/20 border-none" title="Word-by-word highlighting and pronunciation grading">Word-by-word</Badge>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary hover:bg-primary/20 border-none" title={t('card.wordByWordTitle')}>{t('card.wordByWord')}</Badge>
             ) : track.hasSubtitles ? (
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary hover:bg-primary/20 border-none" title="Line-level highlighting and practice">Line practice</Badge>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary hover:bg-primary/20 border-none" title={t('card.linePracticeTitle')}>{t('card.linePractice')}</Badge>
             ) : (
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground border-border/50" title="Read along only — no timing for practice">Read-only</Badge>
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 text-muted-foreground border-border/50" title={t('card.readOnlyTitle')}>{t('card.readOnly')}</Badge>
             )}
             
             {track.hasTranslation && (
-              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary hover:bg-primary/20 border-none">Translation</Badge>
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-primary/10 text-primary hover:bg-primary/20 border-none">{t('card.translation')}</Badge>
             )}
           </div>
 

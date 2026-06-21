@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { Search as SearchIcon, ArrowLeft } from "lucide-react";
 import { useSearchTracks, getSearchTracksQueryKey } from "@workspace/api-client-react";
 import { useSession } from "../store/SessionContext";
+import { useI18n } from "../i18n/I18nContext";
 import { TrackCard } from "../components/TrackCard";
 
 export default function TrackSearch() {
@@ -13,6 +14,7 @@ export default function TrackSearch() {
   const [query, setQuery] = useState(initialQuery);
   const [activeQuery, setActiveQuery] = useState(initialQuery);
   const { setCurrentTrack } = useSession();
+  const { t } = useI18n();
 
   const { data: searchResults, isLoading, isError } = useSearchTracks(
     { q: activeQuery },
@@ -42,7 +44,7 @@ export default function TrackSearch() {
         className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors self-start w-fit"
       >
         <ArrowLeft className="w-4 h-4" />
-        <span>Back to Home</span>
+        <span>{t('search.backHome')}</span>
       </button>
 
       <form onSubmit={handleSearch} className="w-full relative mb-10">
@@ -55,7 +57,7 @@ export default function TrackSearch() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="block w-full pl-12 pr-4 py-4 bg-transparent border-none rounded-xl text-lg outline-none"
-            placeholder="Search tracks..."
+            placeholder={t('search.placeholder')}
             autoFocus={!initialQuery}
           />
         </div>
@@ -70,11 +72,11 @@ export default function TrackSearch() {
           </div>
         ) : isError ? (
           <div className="text-center py-16 bg-destructive/10 text-destructive rounded-2xl border border-destructive/20">
-            <p>Something went wrong searching for tracks.</p>
+            <p>{t('search.error')}</p>
           </div>
         ) : searchResults && searchResults.length > 0 ? (
           <div className="space-y-3">
-            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">Search Results</h2>
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">{t('search.results')}</h2>
             {searchResults.map((track, i) => (
               <div 
                 key={track.trackId}
@@ -93,12 +95,12 @@ export default function TrackSearch() {
           </div>
         ) : activeQuery ? (
           <div className="text-center py-24 bg-card rounded-2xl border border-border/50 text-muted-foreground">
-            <p className="text-lg">No tracks found for "{activeQuery}"</p>
-            <p className="text-sm mt-2">Try a different song or artist</p>
+            <p className="text-lg">{t('search.noResults', { query: activeQuery })}</p>
+            <p className="text-sm mt-2">{t('search.tryDifferent')}</p>
           </div>
         ) : (
           <div className="text-center py-24 text-muted-foreground">
-            Enter a search term above to find tracks.
+            {t('search.enterTerm')}
           </div>
         )}
       </div>

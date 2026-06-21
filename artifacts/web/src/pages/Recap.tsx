@@ -1,11 +1,13 @@
 import { useLocation } from "wouter";
 import { useSession } from "../store/SessionContext";
+import { useI18n } from "../i18n/I18nContext";
 import { Button } from "../components/ui/button";
 import { ArrowRight, RotateCcw } from "lucide-react";
 
 export default function Recap() {
   const [location, setLocation] = useLocation();
   const { currentTrack, attempts, clearSession } = useSession();
+  const { t } = useI18n();
 
   if (!currentTrack) {
     setLocation('/');
@@ -33,29 +35,29 @@ export default function Recap() {
           <img src={currentTrack.albumCoverUrl} alt="Cover" className="w-24 h-24 rounded-2xl shadow-md object-cover mx-auto mb-6" />
         )}
         
-        <h1 className="text-3xl font-bold mb-2">Session Complete</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('recap.complete')}</h1>
         <p className="text-muted-foreground text-lg mb-10">
-          {currentTrack.trackName} by {currentTrack.artistName}
+          {t('recap.byArtist', { trackName: currentTrack.trackName, artistName: currentTrack.artistName })}
         </p>
 
         <div className="grid grid-cols-2 gap-4 mb-12">
           <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10">
             <div className="text-5xl font-bold text-primary mb-2">{linesAttempted}</div>
-            <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Lines Practiced</div>
+            <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{t('recap.linesPracticed')}</div>
           </div>
           
           <div className="bg-primary/5 rounded-2xl p-6 border border-primary/10">
             <div className="text-5xl font-bold text-primary mb-2">{avgScore}%</div>
-            <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">Avg Accuracy</div>
+            <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide">{t('recap.avgAccuracy')}</div>
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Button variant="outline" size="lg" onClick={handlePracticeAgain} className="gap-2 h-14 text-base rounded-xl">
-            <RotateCcw className="w-5 h-5" /> Practice More Lines
+            <RotateCcw className="w-5 h-5" /> {t('recap.practiceMore')}
           </Button>
           <Button size="lg" onClick={handleNewSong} className="gap-2 h-14 text-base rounded-xl shadow-md shadow-primary/20">
-            Find New Track <ArrowRight className="w-5 h-5" />
+            {t('recap.findNew')} <ArrowRight className="w-5 h-5" />
           </Button>
         </div>
       </div>

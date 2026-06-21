@@ -1,0 +1,54 @@
+ElevenLabs
+ElevenLabs gives you state-of-the-art text-to-speech, voice cloning, and dubbing. Perfect for narrated lyric experiences, AI-generated vocals, multilingual covers, or voice-driven discovery.
+Included
+Perk
+3
+Features
+3
+Ideas
+JavaScript
+Snippet
+Open ElevenLabs docs
+View hacker guide
+Watch video tutorial
+Claim your perk
+Hackathon perk
+Claim free ElevenLabs credits through their Discord bot: join the ElevenLabs Discord, open the #coupon-codes channel, hit Start Redemption, pick Musicathon 2026, and enter the email you registered with — the bot sends you a unique coupon code. Async support lives in their #hackathon-support channel.
+How to claim your perk
+Step by step
+Perks become claimable once submissions close — not before. Save these steps for then.
+1
+Click Claim to join the ElevenLabs Discord server.
+2
+Open the #coupon-codes channel and click Start Redemption.
+3
+Select Musicathon 2026 and enter the email you registered with.
+4
+The bot DMs you a unique coupon — 1 month free of the Creator tier, Music API included.
+5
+Need help? Ask in their #hackathon-support channel.
+What you get
+Core features
+Text to Speech
+Realistic voices in 30+ languages. Stream audio chunks as they're generated for low latency.
+Voice Cloning
+Create a custom voice from short samples and reuse it across your whole app.
+Dubbing & Translation
+Translate spoken audio while preserving the original speaker's voice — great for cross-language lyric narration.
+Ideas to steal
+Use it for
+Narrate a song's meaning (powered by Musixmatch lyricslens) in the artist's cloned voice
+Auto-dub lyric explanations into the listener's language
+A 'sing-along coach' that reads back lines for pronunciation practice
+Snippet
+JavaScript
+Copy
+import { ElevenLabs } from "elevenlabs";
+
+const client = new ElevenLabs({ apiKey: process.env.ELEVEN_KEY });
+
+const audio = await client.textToSpeech.convert({
+  voiceId: "21m00Tcm4TlvDq8ikWAM",
+  text: "These lyrics speak about resilience and self-love.",
+  modelId: "eleven_multilingual_v2",
+});

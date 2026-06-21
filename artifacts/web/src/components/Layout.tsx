@@ -1,7 +1,8 @@
 import { ReactNode } from 'react';
 import { Link } from 'wouter';
-import { Globe } from 'lucide-react';
+import { Globe, Loader2 } from 'lucide-react';
 import { useSession } from '../store/SessionContext';
+import { useI18n } from '../i18n/I18nContext';
 import { Logo } from './Logo';
 
 // Languages offered for lyric translation. The translation pipeline is
@@ -44,6 +45,7 @@ const LANGUAGES: { code: string; label: string }[] = [
 
 export function Layout({ children }: { children: ReactNode }) {
   const { targetLanguage, setTargetLanguage } = useSession();
+  const { t, isTranslating } = useI18n();
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-primary/20 flex flex-col font-sans">
@@ -55,9 +57,13 @@ export function Layout({ children }: { children: ReactNode }) {
           </Link>
 
           <div className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-muted-foreground hidden sm:block" />
+            {isTranslating ? (
+              <Loader2 className="w-4 h-4 text-primary animate-spin" />
+            ) : (
+              <Globe className="w-4 h-4 text-muted-foreground hidden sm:block" />
+            )}
             <label htmlFor="lang-select" className="text-sm text-muted-foreground hidden sm:block">
-              Translate to
+              {isTranslating ? t('nav.translating') : t('nav.language')}
             </label>
             <select
               id="lang-select"

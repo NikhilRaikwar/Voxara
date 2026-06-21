@@ -3,6 +3,7 @@ import { useLocation } from "wouter";
 import { ArrowLeft, Mic, Square, Play, RefreshCw, ChevronRight } from "lucide-react";
 import { useGetTrackSession, getGetTrackSessionQueryKey } from "@workspace/api-client-react";
 import { useSession } from "../store/SessionContext";
+import { useI18n } from "../i18n/I18nContext";
 import { useMicRecording } from "../hooks/useMicRecording";
 import { gradeRecording } from "../lib/api-extra";
 import { Button } from "../components/ui/button";
@@ -13,6 +14,7 @@ export default function PracticeMode() {
   const lineIdxParam = searchParams.get('line');
   
   const { currentTrack, targetLanguage, vocalUrl, addAttempt } = useSession();
+  const { t } = useI18n();
 
   if (!currentTrack || !vocalUrl || lineIdxParam === null) {
     setLocation('/');
@@ -129,7 +131,7 @@ export default function PracticeMode() {
   return (
     <div className="flex-1 flex flex-col container mx-auto max-w-3xl px-4 py-8 items-center justify-center min-h-[80vh]">
       <button onClick={() => setLocation('/listen')} className="absolute top-24 left-4 md:left-8 flex items-center gap-2 text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="w-4 h-4" /> <span>Back to Listen</span>
+        <ArrowLeft className="w-4 h-4" /> <span>{t('practice.backToListen')}</span>
       </button>
 
       <audio
@@ -159,7 +161,7 @@ export default function PracticeMode() {
             disabled={isModelPlaying}
             className="rounded-full gap-2 border-primary/20 hover:border-primary/50 text-primary"
           >
-            {isModelPlaying ? <span className="animate-pulse">Playing...</span> : <><Play className="w-5 h-5" /> Play Model Audio</>}
+            {isModelPlaying ? <span className="animate-pulse">{t('practice.playing')}</span> : <><Play className="w-5 h-5" /> {t('practice.playModel')}</>}
           </Button>
         </div>
 
@@ -176,11 +178,11 @@ export default function PracticeMode() {
               {isRecording ? <Square className="w-8 h-8" /> : <Mic className="w-10 h-10" />}
             </button>
             <p className="text-sm text-muted-foreground">
-              {isRecording ? "Tap to stop recording" : "Tap to record your pronunciation"}
+              {isRecording ? t('practice.tapStop') : t('practice.tapRecord')}
             </p>
             {micError && <p className="text-sm text-destructive">{micError}</p>}
             <p className="text-xs text-muted-foreground/60 max-w-xs text-center mt-4">
-              Recordings are sent only for transcription and are not stored.
+              {t('practice.notStored')}
             </p>
           </div>
         )}
@@ -188,14 +190,14 @@ export default function PracticeMode() {
         {isGrading && (
           <div className="py-12 flex flex-col items-center space-y-4 animate-in fade-in">
             <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-            <p className="font-medium text-lg text-primary">Grading pronunciation...</p>
+            <p className="font-medium text-lg text-primary">{t('practice.grading')}</p>
           </div>
         )}
 
         {gradingResult && (
           <div className="bg-card border border-border/50 rounded-3xl p-8 shadow-sm animate-in slide-in-from-bottom-8 fade-in">
             <div className="flex items-center justify-between mb-8 pb-6 border-b border-border/50">
-              <h3 className="text-xl font-semibold">Results</h3>
+              <h3 className="text-xl font-semibold">{t('practice.results')}</h3>
               <div className={`text-3xl font-bold ${gradingResult.scorePercent > 80 ? 'text-green-600 dark:text-green-500' : gradingResult.scorePercent > 50 ? 'text-amber-500' : 'text-destructive'}`}>
                 {gradingResult.scorePercent}%
               </div>
@@ -216,7 +218,7 @@ export default function PracticeMode() {
                         onClick={() => playWord(originalWord.start, originalWord.end)}
                         className="text-[10px] uppercase tracking-wider font-bold bg-primary/10 text-primary px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        Hear
+                        {t('practice.hear')}
                       </button>
                     )}
                   </span>
@@ -226,10 +228,10 @@ export default function PracticeMode() {
 
             <div className="flex justify-center gap-4">
               <Button variant="outline" size="lg" onClick={handleRetry} className="gap-2">
-                <RefreshCw className="w-4 h-4" /> Try Again
+                <RefreshCw className="w-4 h-4" /> {t('practice.tryAgain')}
               </Button>
               <Button size="lg" onClick={handleNext} className="gap-2">
-                Next Line <ChevronRight className="w-4 h-4" />
+                {t('practice.nextLine')} <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           </div>

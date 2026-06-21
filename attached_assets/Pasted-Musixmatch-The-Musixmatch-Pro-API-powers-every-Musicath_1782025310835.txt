@@ -1,0 +1,60 @@
+Musixmatch
+The Musixmatch Pro API powers every Musicathon project with a complete music data foundation — search any track, fetch word-level synced lyrics, translate into dozens of languages, or match audio to metadata in milliseconds.
+Included
+Perk
+5
+Features
+3
+Ideas
+JavaScript
+Snippet
+Open Musixmatch docs
+Claim your perk
+Hackathon perk
+Every registered team receives a Musixmatch Pro API key before kickoff — no sign-up or credit card required. The key is emailed directly to each participant.
+How to claim your perk
+Step by step
+Perks become claimable once submissions close — not before. Save these steps for then.
+1
+Register for Musicathon 2026 and complete your profile.
+2
+Check your inbox before kickoff — your Musixmatch Pro API key will be emailed to you directly, no sign-up or credit card needed.
+3
+Copy the key from the email and drop it into your project.
+What you get
+Core features
+Search & Match
+Search millions of tracks by title, artist, lyrics or ISRC, then match any recording to a canonical Musixmatch ID with full metadata.
+Plain & Synced Lyrics
+Plain-text and word-level synced lyrics for any track, with language detection and copyright metadata.
+Lyrics Analysis & Analysis Search
+Surface mood, themes and language from any lyrics, and search the catalog by those analysis signals.
+Lyrics Fingerprint
+Identify and match a track from a short snippet of its lyrics with a unique lyrics fingerprint.
+Translations
+Human-quality, crowd-sourced lyrics translations in dozens of languages.
+Ideas to steal
+Use it for
+Real-time karaoke engine: pull richsync timestamps and highlight each word as the audio plays
+Multilingual lyric card generator: fetch lyrics then translate and render in the listener's language
+Lyric-powered recommendation engine: search by mood keywords and surface tracks whose words match
+Snippet
+JavaScript
+Copy
+// Search for a track and fetch its synced lyrics
+const BASE = "https://api.musixmatch.com/ws/1.1";
+const KEY  = process.env.MXM_KEY;
+
+// 1. Find the track
+const search = await fetch(
+  `${BASE}/track.search?apikey=${KEY}&q_track=Bohemian+Rhapsody&q_artist=Queen&page_size=1`
+);
+const { track_list } = (await search.json()).message.body;
+const trackId = track_list[0].track.track_id;
+
+// 2. Fetch word-level synced lyrics
+const richsync = await fetch(
+  `${BASE}/track.richsync.get?apikey=${KEY}&track_id=${trackId}`
+);
+const { richsync: rs } = (await richsync.json()).message.body;
+console.log(JSON.parse(rs.richsync_body));

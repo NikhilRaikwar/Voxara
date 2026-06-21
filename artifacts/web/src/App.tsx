@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 
 import { SessionProvider } from "./store/SessionContext";
+import { I18nProvider } from "./i18n/I18nContext";
 import { Layout } from "./components/Layout";
 import Landing from "./pages/Landing";
 import TrackSearch from "./pages/TrackSearch";
@@ -33,12 +34,14 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
-        <TooltipProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
-          </WouterRouter>
-          <Toaster />
-        </TooltipProvider>
+        <I18nProvider>
+          <TooltipProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <Router />
+            </WouterRouter>
+            <Toaster />
+          </TooltipProvider>
+        </I18nProvider>
       </SessionProvider>
     </QueryClientProvider>
   );

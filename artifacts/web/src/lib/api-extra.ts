@@ -26,6 +26,23 @@ export async function uploadIsolation(file: File): Promise<{ vocalUrl: string }>
   return { vocalUrl: URL.createObjectURL(blob) };
 }
 
+// Translate a bundle of UI strings into the target language in one call.
+// Kept out of the OpenAPI spec (raw fetch) like the upload endpoints, since an
+// array request/response body causes codegen friction.
+export async function translateUiBundle(
+  texts: string[],
+  language: string,
+): Promise<(string | null)[]> {
+  const res = await fetch(`${import.meta.env.BASE_URL}api/translate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ texts, language }),
+  });
+  if (!res.ok) throw new Error(await errorMessage(res, 'Translation failed'));
+  const data = (await res.json()) as { translations: (string | null)[] };
+  return data.translations;
+}
+
 export async function gradeRecording(file: Blob, expected: string, languageCode?: string): Promise<GradingResult> {
   const formData = new FormData();
   formData.append('file', file);
