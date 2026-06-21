@@ -127,6 +127,21 @@ This tiered approach makes Musixmatch data operationally meaningful: it decides
 what the learner sees, what can be replayed, and whether pronunciation practice
 is available for a track.
 
+## Partner integrations and use cases
+
+| Partner | Surface used | Where Voxara uses it | Learner-visible result | Failure behavior |
+| --- | --- | --- | --- | --- |
+| **Musixmatch Pro** | `track.search`, `track.get`, `chart.tracks.get`, `track.richsync.get`, `track.subtitle.get`, `track.lyrics.get` | Discovery, canonical track resolution, timed Listen mode, replay boundaries, and Practice mode | Searchable catalog, trending tracks, word-synced highlighting, timed lines, and copyright attribution | Progressively falls back from word sync to line sync to read-only plain lyrics; practice is disabled when timing is unavailable. |
+| **ElevenLabs** | Audio Isolation API and `scribe_v1` speech-to-text | Audio preparation and pronunciation attempts | Clear vocals for focused listening plus a transcript that Voxara grades word by word | The UI reports the provider error and does not fabricate a vocal stem or score. Uploaded media is not retained as product data. |
+| **Songstats** | Track search and track statistics APIs | Optional enrichment on discovery cards | Spotify streams, popularity, playlist placements, Shazams, TikTok views, and a Songstats profile link when available | Non-blocking: a missing key or unmatched track removes statistics without preventing search or lessons. |
+| **Replit** | Workspace, Secrets, managed OpenAI-compatible integration, and Deployment | Build, secret injection, runtime translation, hosting, and public delivery | A single HTTPS demo at [voxara.replit.app](https://voxara.replit.app/) with the web client and `/api` routes served together | Health checks and server-side secrets keep deployment concerns outside the browser; translation falls back to English when unavailable. |
+
+The providers have separate responsibilities. Musixmatch defines the music and
+lyric learning context; ElevenLabs processes audio; Songstats adds optional
+market context; Replit runs and publishes the complete experience. Provider
+keys stay server-side in Replit Secrets or an explicitly configured local
+environment.
+
 ## Architecture
 
 ```mermaid
@@ -156,6 +171,8 @@ flowchart TB
       OpenAI["OpenAI-compatible translation"]
     end
 
+    Replit["Replit workspace · Secrets · Deployment"]
+
     Query --> Tracks
     Query --> Audio
     Query --> Translate
@@ -164,13 +181,18 @@ flowchart TB
     Tracks -. "translation fallback" .-> OpenAI
     Audio --> ElevenLabs
     Translate --> OpenAI
+    Replit --> Client
+    Replit --> Server
+    Replit -. "managed integration" .-> OpenAI
 
     classDef client fill:#E0F2FE,stroke:#0284C7,color:#082F49;
     classDef server fill:#FEF3C7,stroke:#D97706,color:#451A03;
     classDef provider fill:#F3E8FF,stroke:#9333EA,color:#3B0764;
+    classDef platform fill:#DCFCE7,stroke:#16A34A,color:#052E16,stroke-width:2px;
     class Pages,State,Query client;
     class Tracks,Audio,Translate,Guards server;
     class Musixmatch,ElevenLabs,Songstats,OpenAI provider;
+    class Replit platform;
 ```
 
 The API is contract-first: the OpenAPI document generates Zod schemas and React
@@ -246,7 +268,7 @@ artifacts/api-server/   Express API and provider integrations
 lib/api-spec/           OpenAPI source contract
 lib/api-zod/            Generated runtime schemas
 lib/api-client-react/   Generated React API client
-docs/                   Submission and compliance material
+docs/                   Submission material
 ```
 
 Submission maintainers can use the
