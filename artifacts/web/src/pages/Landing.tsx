@@ -36,7 +36,7 @@ export default function Landing() {
           </span>
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground font-serif italic max-w-xl mx-auto">
-          LinguaSync turns your favorite tracks into interactive pronunciation lessons. Sing along, get graded, and perfect your accent.
+          Voxara turns your favorite tracks into interactive pronunciation lessons. Sing along, get graded, and perfect your accent.
         </p>
       </div>
 

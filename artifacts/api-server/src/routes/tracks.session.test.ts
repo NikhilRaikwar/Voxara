@@ -36,6 +36,7 @@ const fakeTrack = {
   albumCoverUrl: null,
   hasLyrics: true,
   hasRichsync: false,
+  hasSubtitles: true,
   hasTranslation: true,
 };
 

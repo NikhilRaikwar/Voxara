@@ -86,7 +86,7 @@ export default function ListenMode() {
         <div className="w-full bg-card border border-border/50 rounded-2xl p-12 text-center shadow-sm">
           <h2 className="text-2xl font-bold mb-4">Provide Track Audio</h2>
           <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-            Upload the audio file for <strong>{currentTrack.trackName}</strong>. LinguaSync will isolate the vocals so you can hear the pronunciation clearly.
+            Upload the audio file for <strong>{currentTrack.trackName}</strong>. Voxara will isolate the vocals so you can hear the pronunciation clearly.
           </p>
 
           {isolationStatus === 'idle' || isolationStatus === 'error' ? (

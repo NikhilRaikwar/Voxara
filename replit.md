@@ -1,4 +1,4 @@
-# LinguaSync
+# Voxara
 
 A music-driven language & pronunciation tutor. Search a song, upload its audio, isolate the vocals, then learn the lyrics in **Listen mode** (word-synced highlighting + tap-to-translate) and rehearse them in **Practice mode** (record yourself, get word-by-word pronunciation grading), ending in a session recap.
 

@@ -3,7 +3,7 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: LinguaSync API — music-driven language & pronunciation tutor
+  description: Voxara API — music-driven language & pronunciation tutor
 servers:
   - url: /api
     description: Base API path
